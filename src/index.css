@@ -1,0 +1,194 @@
+@import "tailwindcss";
+@import url('https://fonts.cdnfonts.com/css/sf-pro-display');
+
+@layer base {
+  :root {
+    --font-sf-pro: "SF Pro Display", -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro", system-ui, sans-serif;
+  }
+
+  html, body {
+    font-family: var(--font-sf-pro);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    letter-spacing: -0.012em;
+  }
+
+  h1, h2, h3, h4, h5, h6, button, input, select, textarea {
+    font-family: "SF Pro Display", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    letter-spacing: -0.02em;
+  }
+}
+
+/* Apple Liquid Glass styles & Ambient Blue Backgrounds */
+.liquid-glass {
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  box-shadow: 
+    0 10px 30px -10px rgba(14, 116, 222, 0.08),
+    0 1px 3px 0 rgba(0, 0, 0, 0.02),
+    inset 0 1px 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.liquid-glass-subtle {
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 
+    0 4px 20px -4px rgba(14, 116, 222, 0.04),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.8);
+}
+
+.liquid-glass-card {
+  background: rgba(255, 255, 255, 0.78);
+  backdrop-filter: blur(24px) saturate(190%);
+  -webkit-backdrop-filter: blur(24px) saturate(190%);
+  border: 1px solid rgba(255, 255, 255, 0.88);
+  box-shadow: 
+    0 12px 36px -8px rgba(15, 23, 42, 0.06),
+    0 2px 8px -2px rgba(14, 116, 222, 0.04),
+    inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.95);
+}
+
+.liquid-glass-card-hover {
+  transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.liquid-glass-card-hover:hover {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.92);
+  border-color: rgba(255, 255, 255, 1);
+  box-shadow: 
+    0 20px 40px -12px rgba(14, 116, 222, 0.12),
+    0 4px 12px -2px rgba(15, 23, 42, 0.04),
+    inset 0 1px 2px 0 rgba(255, 255, 255, 1);
+}
+
+.apple-button-primary {
+  background: linear-gradient(180deg, #1d4ed8 0%, #1e40af 100%);
+  box-shadow: 
+    0 2px 8px -1px rgba(30, 64, 175, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.apple-button-primary:hover {
+  background: linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%);
+  box-shadow: 
+    0 4px 14px -1px rgba(37, 99, 235, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  transform: translateY(-0.5px);
+}
+.apple-button-primary:active {
+  transform: translateY(0.5px);
+  box-shadow: 0 1px 4px -1px rgba(30, 64, 175, 0.3);
+}
+
+.apple-button-amber {
+  background: linear-gradient(180deg, #b45309 0%, #92400e 100%);
+  box-shadow: 
+    0 2px 8px -1px rgba(146, 64, 14, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.apple-button-dark {
+  background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+  box-shadow: 
+    0 2px 8px -1px rgba(15, 23, 42, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+/* Ambient Blue Gradients Background */
+.apple-bg-ambient {
+  background-color: #f8faff;
+  background-image: 
+    radial-gradient(at 15% 15%, rgba(186, 230, 253, 0.4) 0px, transparent 55%),
+    radial-gradient(at 85% 10%, rgba(191, 219, 254, 0.35) 0px, transparent 50%),
+    radial-gradient(at 50% 60%, rgba(224, 242, 254, 0.3) 0px, transparent 65%),
+    radial-gradient(at 80% 85%, rgba(186, 230, 253, 0.35) 0px, transparent 55%),
+    radial-gradient(at 10% 90%, rgba(219, 234, 254, 0.4) 0px, transparent 50%);
+  background-attachment: fixed;
+}
+
+/* Inverted Liquid Glass for Dark Mode (Late-Night Study Environment) */
+.dark body {
+  background-color: #070b14;
+  color: #f1f5f9;
+}
+
+.dark .apple-bg-ambient {
+  background-color: #070b14;
+  background-image: 
+    radial-gradient(at 15% 15%, rgba(14, 116, 222, 0.16) 0px, transparent 55%),
+    radial-gradient(at 85% 10%, rgba(30, 64, 175, 0.18) 0px, transparent 50%),
+    radial-gradient(at 50% 60%, rgba(15, 23, 42, 0.8) 0px, transparent 65%),
+    radial-gradient(at 80% 85%, rgba(14, 116, 222, 0.12) 0px, transparent 55%),
+    radial-gradient(at 10% 90%, rgba(37, 99, 235, 0.14) 0px, transparent 50%);
+  background-attachment: fixed;
+}
+
+.dark .liquid-glass {
+  background: rgba(15, 23, 42, 0.72);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 
+    0 10px 30px -10px rgba(0, 0, 0, 0.5),
+    0 1px 3px 0 rgba(0, 0, 0, 0.2),
+    inset 0 1px 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.dark .liquid-glass-subtle {
+  background: rgba(15, 23, 42, 0.55);
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 
+    0 4px 20px -4px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 0 rgba(255, 255, 255, 0.06);
+}
+
+.dark .liquid-glass-card {
+  background: rgba(15, 23, 42, 0.78);
+  backdrop-filter: blur(24px) saturate(190%);
+  -webkit-backdrop-filter: blur(24px) saturate(190%);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 
+    0 12px 36px -8px rgba(0, 0, 0, 0.6),
+    0 2px 8px -2px rgba(14, 116, 222, 0.1),
+    inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.1);
+}
+
+.dark .liquid-glass-card-hover:hover {
+  background: rgba(26, 38, 64, 0.88);
+  border-color: rgba(255, 255, 255, 0.22);
+  box-shadow: 
+    0 20px 40px -12px rgba(0, 0, 0, 0.75),
+    0 4px 12px -2px rgba(14, 116, 222, 0.15),
+    inset 0 1px 2px 0 rgba(255, 255, 255, 0.16);
+}
+
+/* Smooth custom scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.35);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 116, 139, 0.5);
+}
+
+/* Hide scrollbar utility */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

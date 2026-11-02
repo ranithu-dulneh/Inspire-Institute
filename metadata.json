@@ -1,0 +1,8 @@
+{
+  "name": "Remix Inspire Institution - Academic Portal \u0026 LMS",
+  "description": "Next-generation liquid glass academic platform and LMS for Advanced Level Accounting students, featuring past papers, live interactive sessions, study materials, and video modules.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
