@@ -217,7 +217,7 @@ export const PaymentSlipsTab: React.FC<PaymentSlipsTabProps> = ({
                       {/* Student info */}
                       <td className="py-3.5 px-4">
                         <div className="font-bold text-slate-900">{slip.studentName}</div>
-                        <div className="text-[11px] text-slate-500 font-mono flex items-center gap-1.5">
+                        <div className="text-[11px] text-slate-500 font-sans font-medium flex items-center gap-1.5">
                           <span>{slip.studentId}</span>
                           <span aria-hidden="true">·</span>
                           <span>{slip.studentEmail}</span>
@@ -244,14 +244,14 @@ export const PaymentSlipsTab: React.FC<PaymentSlipsTabProps> = ({
                           </span>
                         )}
                         {slip.referenceNo && (
-                          <div className="text-[10px] text-slate-400 font-mono mt-0.5">
+                          <div className="text-[10px] text-slate-400 font-sans mt-0.5">
                             Ref: {slip.referenceNo}
                           </div>
                         )}
                       </td>
 
                       {/* Amount */}
-                      <td className="py-3.5 px-4 font-bold text-slate-900 tabular-nums font-mono">
+                      <td className="py-3.5 px-4 font-bold text-slate-900 tabular-nums font-sans">
                         Rs. {slip.amount.toLocaleString()}
                       </td>
 
@@ -375,7 +375,7 @@ export const PaymentSlipsTab: React.FC<PaymentSlipsTabProps> = ({
             </div>
 
             <div className="flex items-center justify-between pt-2">
-              <div className="text-xs text-slate-500 font-mono">
+              <div className="text-xs text-slate-500 font-sans">
                 Ref: {selectedZoomSlip.referenceNo || 'None'} · Rs. {selectedZoomSlip.amount.toLocaleString()}
               </div>
               <div className="flex items-center gap-2">

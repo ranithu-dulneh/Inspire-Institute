@@ -356,7 +356,7 @@ export const MaterialUploadsTab: React.FC<MaterialUploadsTabProps> = ({
                     <tr key={item.id} className="hover:bg-slate-50/60 transition-colors">
                       <td className="py-3.5 px-4">
                         <div className="font-bold text-slate-900 line-clamp-1">{item.title}</div>
-                        <div className="text-[10px] text-slate-400 font-mono">{item.fileSize || 'PDF'}</div>
+                        <div className="text-[10px] text-slate-400 font-sans">{item.fileSize || 'PDF'}</div>
                       </td>
 
                       <td className="py-3.5 px-4">
@@ -384,7 +384,7 @@ export const MaterialUploadsTab: React.FC<MaterialUploadsTabProps> = ({
                         {item.isFree ? (
                           <span className="text-emerald-700 font-bold text-[11px]">Free</span>
                         ) : (
-                          <span className="text-slate-900 font-bold font-mono tabular-nums text-[11px]">
+                          <span className="text-slate-900 font-bold font-sans tabular-nums text-[11px]">
                             Rs. {item.price.toLocaleString()}
                           </span>
                         )}

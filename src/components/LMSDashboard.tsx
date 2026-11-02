@@ -1537,14 +1537,14 @@ export const LMSDashboard: React.FC<LMSDashboardProps> = ({
                             </p>
                           </div>
 
-                          {/* Expandable Chapter Timestamps Accordion */}
+                          {/* Expandable Chapter Topics Accordion */}
                           <div className="pt-1">
                             <button
                               onClick={() => setExpandedVideoId(isChaptersExpanded ? null : item.id)}
                               className="text-xs font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1.5 py-1"
                             >
-                              <Clock className="w-3.5 h-3.5" />
-                              <span>{isChaptersExpanded ? 'Hide Chapters' : `View ${item.chapters.length} Timed Chapters`}</span>
+                              <BookOpen className="w-3.5 h-3.5" />
+                              <span>{isChaptersExpanded ? 'Hide Topics' : `View ${item.chapters.length} Curriculum Topics`}</span>
                               <ChevronRight className={`w-3.5 h-3.5 transition-transform ${isChaptersExpanded ? 'rotate-90' : ''}`} />
                             </button>
 
@@ -1553,7 +1553,7 @@ export const LMSDashboard: React.FC<LMSDashboardProps> = ({
                                 {item.chapters.map((ch, idx) => (
                                   <div key={idx} className="flex items-center justify-between py-1 border-b border-slate-100 last:border-0">
                                     <span className="text-slate-800 font-medium truncate mr-2">{ch.title}</span>
-                                    <span className="font-mono text-[11px] font-bold text-blue-600 shrink-0">{ch.time}</span>
+                                    <span className="text-[11px] font-semibold text-blue-600 shrink-0">Topic {idx + 1}</span>
                                   </div>
                                 ))}
                               </div>

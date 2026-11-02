@@ -237,7 +237,7 @@ export const GeneralSettingsTab: React.FC<GeneralSettingsTabProps> = ({
                   value={bankSettings.accountNumber}
                   onChange={(e) => setBankSettings({ ...bankSettings, accountNumber: e.target.value })}
                   placeholder="e.g. 8001234567"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-600 font-mono font-bold tracking-wider text-blue-700"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-600 font-sans font-bold tracking-wider text-blue-700"
                 />
               </div>
 

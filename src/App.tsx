@@ -33,9 +33,42 @@ import { RankerResultItem, defaultResultsData } from './components/PreviousResul
 import { supabaseService } from './services/supabaseService';
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<ActiveTab>('home');
-  // Default to null so public visitors do NOT see Papers and Videos before logging in
-  const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null);
+  const [activeTab, setActiveTabState] = useState<ActiveTab>(() => {
+    try {
+      const saved = localStorage.getItem('inspire_active_tab');
+      if (saved && ['home', 'lms', 'past-papers', 'videos', 'live', 'store', 'results', 'login', 'admin'].includes(saved)) {
+        return saved as ActiveTab;
+      }
+    } catch {}
+    return 'home';
+  });
+
+  const setActiveTab = (tab: ActiveTab) => {
+    setActiveTabState(tab);
+    try {
+      localStorage.setItem('inspire_active_tab', tab);
+    } catch {}
+  };
+
+  const [currentUser, setCurrentUserState] = useState<CurrentUser | null>(() => {
+    try {
+      const saved = localStorage.getItem('inspire_current_user');
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return null;
+  });
+
+  const setCurrentUser = (user: CurrentUser | null) => {
+    setCurrentUserState(user);
+    try {
+      if (user) {
+        localStorage.setItem('inspire_current_user', JSON.stringify(user));
+      } else {
+        localStorage.removeItem('inspire_current_user');
+      }
+    } catch {}
+  };
+
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
 
   // Search items strictly from real database & R2 storage

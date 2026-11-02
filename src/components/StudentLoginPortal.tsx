@@ -231,7 +231,7 @@ export const StudentLoginPortal: React.FC<StudentLoginPortalProps> = ({
                 <span className="text-emerald-700">Official Index</span>
               </div>
               <div className="flex items-center justify-between gap-3 bg-white p-3 rounded-xl border border-slate-200">
-                <span className="font-mono font-black text-xl text-slate-900 tracking-wider tabular-nums">
+                <span className="font-sans font-black text-xl text-slate-900 tracking-wider tabular-nums">
                   {pendingModalData.studentId}
                 </span>
                 <button
@@ -307,7 +307,7 @@ export const StudentLoginPortal: React.FC<StudentLoginPortalProps> = ({
             <div className="p-4 rounded-2xl bg-rose-50/60 border border-rose-200 text-left space-y-2">
               <div className="flex items-center justify-between text-xs font-semibold text-rose-900">
                 <span>Active Device Sessions</span>
-                <span className="font-mono text-rose-700 font-bold tabular-nums">
+                <span className="font-sans text-rose-700 font-bold tabular-nums">
                   {deviceLimitModalData.currentDevices} / {deviceLimitModalData.maxDevices} Devices
                 </span>
               </div>

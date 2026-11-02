@@ -120,7 +120,7 @@ export const PastPapersView: React.FC<PastPapersViewProps> = ({ onSelectPaper })
            ───────────────────────────────────────────────────────────── */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 pt-10">
           <div className="p-5 sm:p-6 rounded-[28px] bg-white/95 backdrop-blur-2xl border border-slate-200/80 shadow-[0_10px_30px_-10px_rgba(15,23,42,0.05)]">
-            <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-400 block">
+            <span className="text-[10px] font-sans font-bold uppercase tracking-wider text-slate-400 block">
               COVERAGE
             </span>
             <div className="flex items-baseline gap-2 mt-2">
@@ -132,7 +132,7 @@ export const PastPapersView: React.FC<PastPapersViewProps> = ({ onSelectPaper })
           </div>
 
           <div className="p-5 sm:p-6 rounded-[28px] bg-white/95 backdrop-blur-2xl border border-slate-200/80 shadow-[0_10px_30px_-10px_rgba(15,23,42,0.05)]">
-            <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-emerald-700 block">
+            <span className="text-[10px] font-sans font-bold uppercase tracking-wider text-emerald-700 block">
               MARKING SCHEMES
             </span>
             <div className="flex items-baseline gap-2 mt-2">
@@ -144,7 +144,7 @@ export const PastPapersView: React.FC<PastPapersViewProps> = ({ onSelectPaper })
           </div>
 
           <div className="p-5 sm:p-6 rounded-[28px] bg-white/95 backdrop-blur-2xl border border-slate-200/80 shadow-[0_10px_30px_-10px_rgba(15,23,42,0.05)]">
-            <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-blue-600 block">
+            <span className="text-[10px] font-sans font-bold uppercase tracking-wider text-blue-600 block">
               LANGUAGES
             </span>
             <div className="flex items-baseline gap-2 mt-2">
@@ -156,7 +156,7 @@ export const PastPapersView: React.FC<PastPapersViewProps> = ({ onSelectPaper })
           </div>
 
           <div className="p-5 sm:p-6 rounded-[28px] bg-white/95 backdrop-blur-2xl border border-slate-200/80 shadow-[0_10px_30px_-10px_rgba(15,23,42,0.05)]">
-            <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-400 block">
+            <span className="text-[10px] font-sans font-bold uppercase tracking-wider text-slate-400 block">
               VERIFICATION
             </span>
             <div className="flex items-baseline gap-2 mt-2">
@@ -312,8 +312,8 @@ export const PastPapersView: React.FC<PastPapersViewProps> = ({ onSelectPaper })
                     {/* Top Row: Year Pill, Medium Badge, Category */}
                     <div className="flex flex-wrap items-center justify-between gap-2">
                       <div className="flex items-center gap-1.5">
-                        <span className="px-2.5 py-0.5 rounded-full text-[11px] font-mono font-bold bg-slate-950 text-white shadow-2xs">
-                          #{paper.year}
+                        <span className="px-2.5 py-0.5 rounded-full text-[11px] font-sans font-bold bg-slate-950 text-white shadow-2xs">
+                          {paper.year}
                         </span>
                         <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
                           paper.medium === 'sinhala'
@@ -326,14 +326,14 @@ export const PastPapersView: React.FC<PastPapersViewProps> = ({ onSelectPaper })
                         </span>
                       </div>
 
-                      <span className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-wider">
+                      <span className="text-[10px] font-sans font-semibold text-slate-400 uppercase tracking-wider">
                         {paper.category}
                       </span>
                     </div>
 
                     {/* Paper Title & Subtitle */}
                     <div className="space-y-1.5 pt-1">
-                      <span className="text-[10px] font-mono font-bold text-blue-600 uppercase tracking-wider block">
+                      <span className="text-[10px] font-sans font-bold text-blue-600 uppercase tracking-wider block">
                         {paper.subject}
                       </span>
                       <h3 className="text-lg font-black text-slate-900 group-hover:text-blue-600 transition-colors leading-snug">
@@ -345,15 +345,15 @@ export const PastPapersView: React.FC<PastPapersViewProps> = ({ onSelectPaper })
                     </div>
 
                     {/* Meta Specs Chips */}
-                    <div className="flex flex-wrap items-center gap-2 pt-2 text-[11px] text-slate-500 font-mono">
-                      <span className="px-2 py-0.5 rounded-lg bg-slate-50 border border-slate-100">
+                    <div className="flex flex-wrap items-center gap-2 pt-2 text-[11px] text-slate-500 font-sans">
+                      <span className="px-2 py-0.5 rounded-lg bg-slate-50 border border-slate-100 font-medium">
                         {paper.pages} Pages
                       </span>
-                      <span className="px-2 py-0.5 rounded-lg bg-slate-50 border border-slate-100">
+                      <span className="px-2 py-0.5 rounded-lg bg-slate-50 border border-slate-100 font-medium">
                         {paper.fileSize}
                       </span>
                       {paper.hasMarkingScheme && (
-                        <span className="px-2 py-0.5 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-100 flex items-center gap-1">
+                        <span className="px-2 py-0.5 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-100 flex items-center gap-1 font-medium">
                           <CheckCircle2 className="w-3 h-3" />
                           <span>Marking Scheme</span>
                         </span>
@@ -414,7 +414,7 @@ export const PastPapersView: React.FC<PastPapersViewProps> = ({ onSelectPaper })
         </span>
 
         <div className="relative z-10 space-y-6 max-w-4xl">
-          <div className="inline-flex items-center gap-2 text-[11px] font-mono font-bold uppercase tracking-wider text-blue-400 bg-blue-950/70 border border-blue-500/30 px-3 py-1 rounded-full">
+          <div className="inline-flex items-center gap-2 text-[11px] font-sans font-bold uppercase tracking-wider text-blue-400 bg-blue-950/70 border border-blue-500/30 px-3 py-1 rounded-full">
             <ShieldCheck className="w-3.5 h-3.5 text-blue-400" />
             <span>EXAMINATION BOARD CURRICULUM NOTES</span>
           </div>
@@ -430,7 +430,7 @@ export const PastPapersView: React.FC<PastPapersViewProps> = ({ onSelectPaper })
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
             <div className="p-4 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md space-y-1.5">
-              <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-blue-400 block">
+              <span className="text-[10px] font-sans font-bold uppercase tracking-wider text-blue-400 block">
                 PART I — 50 MCQs
               </span>
               <p className="text-xs font-semibold text-white">2 Hours Duration · 100 Marks</p>
@@ -440,7 +440,7 @@ export const PastPapersView: React.FC<PastPapersViewProps> = ({ onSelectPaper })
             </div>
 
             <div className="p-4 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md space-y-1.5">
-              <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-emerald-400 block">
+              <span className="text-[10px] font-sans font-bold uppercase tracking-wider text-emerald-400 block">
                 PART II — STRUCTURED
               </span>
               <p className="text-xs font-semibold text-white">3 Hours Duration · 100 Marks</p>
@@ -450,7 +450,7 @@ export const PastPapersView: React.FC<PastPapersViewProps> = ({ onSelectPaper })
             </div>
 
             <div className="p-4 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md space-y-1.5">
-              <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-sky-400 block">
+              <span className="text-[10px] font-sans font-bold uppercase tracking-wider text-sky-400 block">
                 LKAS STANDARDS
               </span>
               <p className="text-xs font-semibold text-white">LKAS 01, 02, 07 &amp; 16</p>

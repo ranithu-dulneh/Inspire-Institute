@@ -76,22 +76,66 @@ export const ModulePaymentModal: React.FC<ModulePaymentModalProps> = ({
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size > 8 * 1024 * 1024) {
-        setErrorMessage('File size exceeds 8MB. Please select a smaller photo.');
+      if (file.size > 15 * 1024 * 1024) {
+        setErrorMessage('File size exceeds 15MB. Please select a smaller photo.');
         return;
       }
       setErrorMessage('');
       const reader = new FileReader();
       reader.onload = (event) => {
-        if (event.target?.result) {
-          setSlipImage(event.target.result as string);
+        const rawResult = event.target?.result as string;
+        if (!rawResult) return;
+
+        // Compress image using canvas to avoid localStorage quota crashes and speed up upload
+        if (file.type.startsWith('image/')) {
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const MAX_WIDTH = 1200;
+            const MAX_HEIGHT = 1200;
+            let width = img.width;
+            let height = img.height;
+
+            if (width > height) {
+              if (width > MAX_WIDTH) {
+                height = Math.round((height * MAX_WIDTH) / width);
+                width = MAX_WIDTH;
+              }
+            } else {
+              if (height > MAX_HEIGHT) {
+                width = Math.round((width * MAX_HEIGHT) / height);
+                height = MAX_HEIGHT;
+              }
+            }
+
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            if (ctx) {
+              ctx.drawImage(img, 0, 0, width, height);
+              const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.8);
+              setSlipImage(compressedDataUrl);
+            } else {
+              setSlipImage(rawResult);
+            }
+          };
+          img.onerror = () => {
+            setSlipImage(rawResult);
+          };
+          img.src = rawResult;
+        } else {
+          setSlipImage(rawResult);
         }
       };
       reader.readAsDataURL(file);
     }
   };
 
-  const handleSubmitVerification = async () => {
+  const handleSubmitVerification = async (e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     if (!currentUser) {
       if (onRequireLogin) {
         onClose();
@@ -200,7 +244,7 @@ export const ModulePaymentModal: React.FC<ModulePaymentModalProps> = ({
               </h2>
 
               <div className="flex items-baseline gap-2">
-                <span className="text-3xl font-extrabold text-slate-950 tracking-tight tabular-nums font-mono">
+                <span className="text-3xl font-extrabold text-slate-950 tracking-tight tabular-nums font-sans">
                   Rs. {module.priceLKR.toLocaleString()}
                 </span>
                 <span className="text-xs text-slate-500 font-medium">
@@ -235,7 +279,7 @@ export const ModulePaymentModal: React.FC<ModulePaymentModalProps> = ({
                 </div>
                 <div className="bg-white p-2.5 rounded-xl border border-slate-200/70">
                   <span className="text-[10px] text-slate-400 block uppercase font-medium">Account Number</span>
-                  <span className="font-bold text-blue-700 tracking-wider font-mono">{generalSettings.accountNumber}</span>
+                  <span className="font-bold text-blue-700 tracking-wider font-sans">{generalSettings.accountNumber}</span>
                 </div>
               </div>
 

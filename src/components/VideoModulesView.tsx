@@ -256,7 +256,7 @@ export const VideoModulesView: React.FC<VideoModulesViewProps> = ({
           <div className="mt-8 p-6 sm:p-8 rounded-[32px] bg-gradient-to-r from-slate-950 via-[#0B1528] to-blue-950 text-white shadow-[0_16px_50px_rgba(15,23,42,0.14)] border border-slate-800 relative overflow-hidden flex flex-col lg:flex-row items-center justify-between gap-6">
             <div className="relative z-10 space-y-3 max-w-2xl">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider text-emerald-400 bg-emerald-950/70 border border-emerald-500/30">
+                <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-[10px] font-sans font-bold uppercase tracking-wider text-emerald-400 bg-emerald-950/70 border border-emerald-500/30">
                   <Radio className="w-3 h-3 text-emerald-400 animate-pulse" />
                   <span>{spotlightItem.session.month} RECENT LESSON SESSION</span>
                 </span>
@@ -273,13 +273,13 @@ export const VideoModulesView: React.FC<VideoModulesViewProps> = ({
                 {spotlightItem.session.description || spotlightItem.lesson.description}
               </p>
 
-              <div className="flex flex-wrap items-center gap-3 pt-1 text-xs text-slate-400 font-mono">
-                <span className="flex items-center gap-1.5">
+              <div className="flex flex-wrap items-center gap-3 pt-1 text-xs text-slate-400 font-sans">
+                <span className="flex items-center gap-1.5 font-medium">
                   <Clock className="w-3.5 h-3.5 text-blue-400" />
                   <span>{spotlightItem.session.duration}</span>
                 </span>
                 <span>·</span>
-                <span>{spotlightItem.session.month} Cohort</span>
+                <span className="font-medium">{spotlightItem.session.month} Cohort</span>
                 <span>·</span>
                 <span className="text-emerald-400 font-bold">1080p HD Studio Quality</span>
               </div>
@@ -319,7 +319,7 @@ export const VideoModulesView: React.FC<VideoModulesViewProps> = ({
             >
               <Layers className="w-3.5 h-3.5" />
               <span>Lesson-Wise View</span>
-              <span className={`px-1.5 py-0.5 text-[10px] rounded-md font-mono ${
+              <span className={`px-1.5 py-0.5 text-[10px] rounded-md font-sans font-semibold ${
                 displayMode === 'lesson-wise' ? 'bg-slate-800 text-slate-200' : 'bg-slate-200 text-slate-700'
               }`}>
                 {lessons.length}
@@ -336,7 +336,7 @@ export const VideoModulesView: React.FC<VideoModulesViewProps> = ({
             >
               <Calendar className="w-3.5 h-3.5" />
               <span>Monthly Lesson Modules</span>
-              <span className={`px-1.5 py-0.5 text-[10px] rounded-md font-mono ${
+              <span className={`px-1.5 py-0.5 text-[10px] rounded-md font-sans font-semibold ${
                 displayMode === 'monthly' ? 'bg-blue-700 text-blue-100' : 'bg-slate-200 text-slate-700'
               }`}>
                 {allSessionsWithLesson.length}
@@ -462,13 +462,13 @@ export const VideoModulesView: React.FC<VideoModulesViewProps> = ({
                     >
                       <div className="space-y-2">
                         <div className="flex flex-wrap items-center gap-2">
-                          <span className="px-3 py-1 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider bg-blue-50 text-blue-700 border border-blue-200/60">
+                          <span className="px-3 py-1 rounded-full text-[10px] font-sans font-bold uppercase tracking-wider bg-blue-50 text-blue-700 border border-blue-200/60">
                             {lesson.batch}
                           </span>
-                          <span className="px-3 py-1 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider bg-slate-100 text-slate-700 border border-slate-200/60">
+                          <span className="px-3 py-1 rounded-full text-[10px] font-sans font-bold uppercase tracking-wider bg-slate-100 text-slate-700 border border-slate-200/60">
                             {lesson.sessions.length} {lesson.sessions.length === 1 ? 'Session' : 'Sessions'}
                           </span>
-                          <span className="text-xs text-slate-400 font-mono">
+                          <span className="text-xs text-slate-500 font-sans font-medium">
                             LKAS Certified Curriculum
                           </span>
                         </div>
@@ -484,7 +484,7 @@ export const VideoModulesView: React.FC<VideoModulesViewProps> = ({
 
                       <div className="flex items-center gap-3 shrink-0 self-end lg:self-center">
                         <div className="text-right hidden sm:block">
-                          <p className="text-xs font-bold text-slate-900 font-mono">
+                          <p className="text-xs font-bold text-slate-900 font-sans">
                             {lesson.sessions.length} Video Sessions
                           </p>
                           <p className="text-[11px] text-slate-400">
@@ -509,7 +509,7 @@ export const VideoModulesView: React.FC<VideoModulesViewProps> = ({
                           <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">
                             Sessions Included in {lesson.title.split(':')[0] || 'Lesson'}
                           </h4>
-                          <span className="text-[11px] text-slate-400 font-mono">
+                          <span className="text-[11px] text-slate-400 font-sans font-medium">
                             Click any session to open video player
                           </span>
                         </div>
@@ -535,10 +535,10 @@ export const VideoModulesView: React.FC<VideoModulesViewProps> = ({
                                   <div className="space-y-2">
                                     {/* Badges */}
                                     <div className="flex items-center justify-between">
-                                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider bg-indigo-50 text-indigo-700 border border-indigo-200/60">
+                                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-sans font-bold uppercase tracking-wider bg-indigo-50 text-indigo-700 border border-indigo-200/60">
                                         {session.month} Session
                                       </span>
-                                      <span className="text-[10px] font-mono text-slate-400 flex items-center gap-1">
+                                      <span className="text-[10px] font-sans font-medium text-slate-400 flex items-center gap-1">
                                         <Clock className="w-3 h-3" />
                                         {session.duration}
                                       </span>
@@ -644,15 +644,15 @@ export const VideoModulesView: React.FC<VideoModulesViewProps> = ({
                       <div className="absolute top-0 right-0 w-36 h-36 bg-blue-500/20 rounded-full blur-2xl pointer-events-none" />
 
                       <div className="relative z-10 flex items-center justify-between">
-                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-white/10 text-white backdrop-blur-md border border-white/15">
+                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-sans font-bold bg-white/10 text-white backdrop-blur-md border border-white/15">
                           {session.month} Month Module
                         </span>
                         {unlocked ? (
-                          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold text-emerald-300 bg-emerald-950/60 border border-emerald-500/30">
+                          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-sans font-bold text-emerald-300 bg-emerald-950/60 border border-emerald-500/30">
                             1080p FHD
                           </span>
                         ) : (
-                          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold text-amber-300 bg-amber-950/60 border border-amber-500/30 flex items-center gap-1">
+                          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-sans font-bold text-amber-300 bg-amber-950/60 border border-amber-500/30 flex items-center gap-1">
                             <Lock className="w-3 h-3 text-amber-400" />
                             <span>Locked</span>
                           </span>
@@ -673,8 +673,8 @@ export const VideoModulesView: React.FC<VideoModulesViewProps> = ({
                         </div>
                       </div>
 
-                      <div className="relative z-10 flex items-center justify-between text-xs text-slate-300 font-mono">
-                        <span>{lesson.batch}</span>
+                      <div className="relative z-10 flex items-center justify-between text-xs text-slate-300 font-sans">
+                        <span className="font-semibold">{lesson.batch}</span>
                         <span className="px-2 py-0.5 rounded-md bg-black/40 text-white text-[11px] font-bold">
                           {session.duration}
                         </span>
@@ -685,10 +685,10 @@ export const VideoModulesView: React.FC<VideoModulesViewProps> = ({
                     <div className="p-6 space-y-4 flex-1 flex flex-col justify-between">
                       <div className="space-y-2">
                         <div className="flex items-center justify-between">
-                          <span className="text-[10px] font-mono font-bold text-blue-600 uppercase tracking-wider block truncate max-w-[200px]">
+                          <span className="text-[10px] font-sans font-bold text-blue-600 uppercase tracking-wider block truncate max-w-[200px]">
                             {lesson.title}
                           </span>
-                          <span className="text-[10px] font-mono text-slate-400">
+                          <span className="text-[10px] font-sans font-semibold text-slate-400">
                             {session.month}
                           </span>
                         </div>
@@ -706,7 +706,7 @@ export const VideoModulesView: React.FC<VideoModulesViewProps> = ({
                       </div>
 
                       <div className="pt-4 border-t border-slate-100 flex items-center justify-between gap-3">
-                        <div className="text-[11px] text-slate-400 font-mono">
+                        <div className="text-[11px] text-slate-400 font-sans font-medium">
                           {session.isFree ? 'Free Preview' : (session.youtubeUrl ? 'YouTube Stream' : 'Inspire Cloud Stream')}
                         </div>
 
@@ -749,7 +749,7 @@ export const VideoModulesView: React.FC<VideoModulesViewProps> = ({
         </span>
 
         <div className="relative z-10 space-y-6 max-w-4xl">
-          <div className="inline-flex items-center gap-2 text-[11px] font-mono font-bold uppercase tracking-wider text-blue-400 bg-blue-950/70 border border-blue-500/30 px-3 py-1 rounded-full">
+          <div className="inline-flex items-center gap-2 text-[11px] font-sans font-bold uppercase tracking-wider text-blue-400 bg-blue-950/70 border border-blue-500/30 px-3 py-1 rounded-full">
             <Sparkles className="w-3.5 h-3.5 text-blue-400" />
             <span>EXAMINATION-READY LESSON FEATURES</span>
           </div>
@@ -765,7 +765,7 @@ export const VideoModulesView: React.FC<VideoModulesViewProps> = ({
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
             <div className="p-4 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md space-y-1.5">
-              <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-blue-400 block">
+              <span className="text-[10px] font-sans font-bold uppercase tracking-wider text-blue-400 block">
                 LESSON-WISE ARCHITECTURE
               </span>
               <p className="text-xs font-semibold text-white">Curriculum Progression</p>
@@ -775,7 +775,7 @@ export const VideoModulesView: React.FC<VideoModulesViewProps> = ({
             </div>
 
             <div className="p-4 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md space-y-1.5">
-              <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-emerald-400 block">
+              <span className="text-[10px] font-sans font-bold uppercase tracking-wider text-emerald-400 block">
                 MONTHLY COHORTS
               </span>
               <p className="text-xs font-semibold text-white">Month-by-Month Archive</p>
@@ -785,7 +785,7 @@ export const VideoModulesView: React.FC<VideoModulesViewProps> = ({
             </div>
 
             <div className="p-4 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md space-y-1.5">
-              <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-sky-400 block">
+              <span className="text-[10px] font-sans font-bold uppercase tracking-wider text-sky-400 block">
                 SYLLABUS MATERIALS
               </span>
               <p className="text-xs font-semibold text-white">LKAS Structured Notes</p>

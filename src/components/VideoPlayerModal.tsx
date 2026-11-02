@@ -105,8 +105,8 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({ video, onClo
           <div className="flex-1 overflow-y-auto p-4 space-y-3">
             {activeSideTab === 'chapters' ? (
               <div className="space-y-2">
-                <div className="flex items-center justify-between text-[11px] text-slate-500 font-medium pb-1">
-                  <span>{video.chapters.length} Timestamps</span>
+                <div className="flex items-center justify-between text-[11px] text-slate-500 font-medium pb-1 font-sans">
+                  <span>{video.chapters.length} Curriculum Topics</span>
                   <span>{completedChapters.length}/{video.chapters.length} Completed</span>
                 </div>
 
@@ -134,12 +134,11 @@ export const VideoPlayerModal: React.FC<VideoPlayerModalProps> = ({ video, onClo
                         <CheckCircle className="w-4 h-4" />
                       </button>
                       <div className="flex-1 min-w-0">
-                        <p className="text-xs font-bold truncate">
+                        <p className="text-xs font-bold truncate font-sans">
                           {chap.title}
                         </p>
-                        <div className="flex items-center gap-1 text-[11px] text-blue-600 font-mono mt-0.5">
-                          <Clock className="w-3 h-3 text-blue-500" />
-                          <span>Jump to {chap.time}</span>
+                        <div className="text-[11px] text-blue-600 font-sans font-medium mt-0.5">
+                          <span>Lecture Topic #{idx + 1}</span>
                         </div>
                       </div>
                     </div>

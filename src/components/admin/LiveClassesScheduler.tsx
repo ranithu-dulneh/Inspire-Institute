@@ -130,7 +130,7 @@ export const LiveClassesScheduler: React.FC<LiveClassesSchedulerProps> = ({
                   {c.title}
                 </h4>
 
-                <div className="flex items-center gap-3 text-xs text-slate-600 font-mono">
+                <div className="flex items-center gap-3 text-xs text-slate-600 font-sans font-medium">
                   <div className="flex items-center gap-1">
                     <Calendar className="w-3.5 h-3.5 text-blue-600" />
                     <span>{classDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
@@ -149,7 +149,7 @@ export const LiveClassesScheduler: React.FC<LiveClassesSchedulerProps> = ({
               </div>
 
               <div className="pt-2 border-t border-slate-200/80 flex items-center justify-between text-xs">
-                <div className="text-[11px] font-mono text-slate-500 truncate max-w-[200px]">
+                <div className="text-[11px] font-sans text-slate-500 truncate max-w-[200px]">
                   Pass: <strong className="text-slate-800">{c.zoomPasscode || 'None'}</strong>
                 </div>
 
@@ -270,7 +270,7 @@ export const LiveClassesScheduler: React.FC<LiveClassesSchedulerProps> = ({
                     value={zoomLink}
                     onChange={(e) => setZoomLink(e.target.value)}
                     placeholder="https://zoom.us/j/..."
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 font-mono text-[11px]"
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 font-sans text-xs"
                   />
                 </div>
                 <div className="space-y-1">
@@ -280,7 +280,7 @@ export const LiveClassesScheduler: React.FC<LiveClassesSchedulerProps> = ({
                     value={zoomPasscode}
                     onChange={(e) => setZoomPasscode(e.target.value)}
                     placeholder="e.g. INSPIRE2025"
-                    className="w-full px-3 py-2 rounded-xl border border-slate-200 font-mono text-[11px]"
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 font-sans font-semibold text-xs"
                   />
                 </div>
               </div>

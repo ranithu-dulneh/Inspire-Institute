@@ -212,7 +212,7 @@ export const LiveClassesView: React.FC<LiveClassesViewProps> = ({
                   </div>
                   <div className="flex items-center gap-2">
                     <Clock className="w-4 h-4 text-blue-600 shrink-0" />
-                    <span className="font-mono tabular-nums">
+                    <span className="font-sans font-medium tabular-nums">
                       {classDate.toLocaleTimeString('en-US', {
                         hour: '2-digit',
                         minute: '2-digit'
@@ -243,7 +243,7 @@ export const LiveClassesView: React.FC<LiveClassesViewProps> = ({
                         <button
                           type="button"
                           onClick={() => handleCopyPasscode(item.id, item.zoomPasscode)}
-                          className="flex items-center gap-1 text-[11px] font-mono text-slate-700 bg-white px-2 py-1 rounded border border-slate-200 hover:bg-slate-50"
+                          className="flex items-center gap-1 text-[11px] font-sans font-semibold text-slate-700 bg-white px-2 py-1 rounded border border-slate-200 hover:bg-slate-50"
                         >
                           {copiedPasscodeId === item.id ? (
                             <>

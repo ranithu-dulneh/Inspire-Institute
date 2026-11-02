@@ -599,7 +599,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       {/* Top Header & Breadcrumbs */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 pb-6 pt-2">
         <div className="space-y-1">
-          <div className="flex items-center gap-2 text-xs text-slate-500 font-mono">
+          <div className="flex items-center gap-2 text-xs text-slate-500 font-sans font-semibold">
             <span className="text-emerald-700 font-bold uppercase tracking-wider flex items-center gap-1">
               <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
               ADMINISTRATIVE CONTROL PANEL

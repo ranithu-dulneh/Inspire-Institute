@@ -957,53 +957,38 @@ export const supabaseService = {
 
   /**
    * Fetch real past papers from Supabase Tutes and materials tables.
-   * Returns empty array if database has no rows (strictly no dummy data).
+    * Returns empty array if database has no rows (strictly no dummy data).
    */
   async getPastPapers(): Promise<PastPaper[]> {
-    if (!isSupabaseConfigured) return [];
+    const papers: PastPaper[] = [];
+
+    // 1. Real Past Papers created in Admin Dashboard
     try {
-      const [tutes, materials] = await Promise.all([
-        this.getTutes(),
-        this.getMaterials()
-      ]);
+      const local: PastPaper[] = JSON.parse(localStorage.getItem('inspire_admin_papers') || '[]');
+      if (Array.isArray(local)) {
+        papers.push(...local);
+      }
+    } catch {}
 
-      const papers: PastPaper[] = [];
-
-      tutes.forEach(t => {
-        // Detect year from title or created_at
-        const yearMatch = t.title.match(/(202\d)/);
-        const year = yearMatch ? parseInt(yearMatch[1], 10) : new Date(t.created_at || Date.now()).getFullYear();
-
-        // Detect medium
-        let medium: 'sinhala' | 'english' | 'tamil' = 'sinhala';
-        const lowerTitle = t.title.toLowerCase();
-        if (lowerTitle.includes('english')) medium = 'english';
-        else if (lowerTitle.includes('tamil')) medium = 'tamil';
-
-        papers.push({
-          id: `tute-pp-${t.id}`,
-          year,
-          subject: 'Accounting Principles',
-          medium,
-          title: t.title,
-          subtitle: `Inspire Certified Curriculum Archive (${t.access_level === 'free' ? 'Free Access' : `Rs. ${t.price || 0}`})`,
-          pages: 24,
-          fileSize: '4.8 MB',
-          hasMarkingScheme: true,
-          downloadCount: 0,
-          category: 'Final Exam',
-          filePath: t.file_path,
-          fileUrl: resolveR2Url(t.file_path),
-          thumbnailPath: t.thumbnail_path ? resolveR2Url(t.thumbnail_path) : undefined
-        });
-      });
-
+    // 2. Fetch materials from database/storage that are strictly past papers or marking schemes (NEVER class tutes)
+    try {
+      const materials = await this.getCategorizedMaterials();
       materials.forEach(m => {
-        const lowerTitle = m.title.toLowerCase();
+        // Explicitly exclude class tutes
+        if (m.category === 'tute') return;
+
+        const isPaperOrScheme = m.category === 'past_paper' || m.category === 'marking_scheme' ||
+          m.title.toLowerCase().includes('past paper') || m.title.toLowerCase().includes('model paper') ||
+          m.title.toLowerCase().includes('marking scheme');
+
+        if (!isPaperOrScheme) return;
+        if (papers.some(p => p.id === m.id || p.title.toLowerCase() === m.title.toLowerCase())) return;
+
         const yearMatch = m.title.match(/(202\d)/);
-        const year = yearMatch ? parseInt(yearMatch[1], 10) : new Date(m.created_at || Date.now()).getFullYear();
+        const year = yearMatch ? parseInt(yearMatch[1], 10) : new Date(m.createdAt || Date.now()).getFullYear();
 
         let medium: 'sinhala' | 'english' | 'tamil' = 'sinhala';
+        const lowerTitle = m.title.toLowerCase();
         if (lowerTitle.includes('english')) medium = 'english';
         else if (lowerTitle.includes('tamil')) medium = 'tamil';
 
@@ -1013,22 +998,21 @@ export const supabaseService = {
           subject: 'Accounting Principles',
           medium,
           title: m.title,
-          subtitle: `Curriculum Document · ${m.file_size ? `${Math.round(m.file_size / 1024)} KB` : 'PDF'}`,
+          subtitle: `Certified Curriculum Archive (${m.isFree ? 'Free Access' : `Rs. ${m.price}`})`,
           pages: 20,
-          fileSize: m.file_size ? `${(m.file_size / (1024 * 1024)).toFixed(1)} MB` : '3.5 MB',
-          hasMarkingScheme: true,
+          fileSize: m.fileSize || '3.5 MB',
+          hasMarkingScheme: m.category === 'marking_scheme' || lowerTitle.includes('marking'),
           downloadCount: 0,
-          category: 'Model Paper',
-          filePath: m.file_url,
-          fileUrl: resolveR2Url(m.file_url)
+          category: m.category === 'marking_scheme' ? 'Mid-Term Assessment' : 'Final Exam',
+          fileUrl: m.fileUrl,
+          filePath: m.fileUrl
         });
       });
-
-      return papers;
     } catch (err) {
-      console.error('Error fetching real past papers:', err);
-      return [];
+      console.warn('Notice querying past papers:', err);
     }
+
+    return papers;
   },
 
   async deletePastPaper(id: string): Promise<boolean> {
@@ -1683,41 +1667,15 @@ export const supabaseService = {
   // SCHEDULED LIVE ZOOM CLASSES
   // -------------------------------------------------------------
   async getLiveClasses(): Promise<LiveClass[]> {
-    const DEFAULT_LIVE_CLASSES: LiveClass[] = [
-      {
-        id: 'live-01',
-        title: 'LKAS 02 Inventory Valuation & Group Consolidation Masterclass',
-        batch: 'A/L 2025',
-        month: 'September',
-        scheduledAt: new Date(Date.now() + 86400000 * 2).toISOString(), // in 2 days
-        durationMinutes: 120,
-        zoomLink: 'https://zoom.us/j/98765432100',
-        zoomPasscode: 'INSPIRE2025',
-        agenda: 'In-depth discussion of Sri Lanka Accounting Standards 02, inventory valuation methodologies, NRV calculations, and 2024 past paper review.',
-        isFree: false,
-        status: 'upcoming'
-      },
-      {
-        id: 'live-02',
-        title: 'Partnership Realization & Dissolution Live Case Studies',
-        batch: 'A/L 2026',
-        month: 'August',
-        scheduledAt: new Date(Date.now() + 86400000 * 5).toISOString(),
-        durationMinutes: 90,
-        zoomLink: 'https://zoom.us/j/98765432200',
-        zoomPasscode: 'ACC2026',
-        agenda: 'Realization account preparation, capital account settlements, Garner vs Murray rule application, and structured question models.',
-        isFree: false,
-        status: 'upcoming'
-      }
-    ];
-
     if (!isSupabaseConfigured) {
       const saved = localStorage.getItem('inspire_live_classes');
       if (saved) {
-        try { return JSON.parse(saved); } catch {}
+        try {
+          const parsed = JSON.parse(saved);
+          return (Array.isArray(parsed) ? parsed : []).filter((c: any) => c.id !== 'live-01' && c.id !== 'live-02');
+        } catch {}
       }
-      return DEFAULT_LIVE_CLASSES;
+      return [];
     }
 
     try {
@@ -1748,9 +1706,12 @@ export const supabaseService = {
 
     const saved = localStorage.getItem('inspire_live_classes');
     if (saved) {
-      try { return JSON.parse(saved); } catch {}
+      try {
+        const parsed = JSON.parse(saved);
+        return (Array.isArray(parsed) ? parsed : []).filter((c: any) => c.id !== 'live-01' && c.id !== 'live-02');
+      } catch {}
     }
-    return DEFAULT_LIVE_CLASSES;
+    return [];
   },
 
   async createLiveClass(data: Omit<LiveClass, 'id'>): Promise<LiveClass> {
@@ -1813,51 +1774,15 @@ export const supabaseService = {
   // CATEGORIZED MATERIAL UPLOADS (TUTES, PAST PAPERS, MARKING SCHEMES)
   // -------------------------------------------------------------
   async getCategorizedMaterials(): Promise<CategorizedMaterial[]> {
-    const DEFAULT_MATERIALS: CategorizedMaterial[] = [
-      {
-        id: 'mat-cat-01',
-        title: 'LKAS 01 Presentation of Financial Statements Comprehensive Tute',
-        category: 'tute',
-        batch: 'A/L 2025',
-        month: 'August',
-        isFree: false,
-        price: 850,
-        fileUrl: 'https://pdfobject.com/pdf/sample.pdf',
-        fileSize: '3.4 MB',
-        createdAt: new Date().toISOString()
-      },
-      {
-        id: 'mat-cat-02',
-        title: '2024 G.C.E. Advanced Level Accounting Past Paper (Sinhala & English)',
-        category: 'past_paper',
-        batch: 'A/L 2025',
-        month: 'September',
-        isFree: true,
-        price: 0,
-        fileUrl: 'https://pdfobject.com/pdf/sample.pdf',
-        fileSize: '5.2 MB',
-        createdAt: new Date().toISOString()
-      },
-      {
-        id: 'mat-cat-03',
-        title: 'Official Department Marking Scheme & Examiner Notes - 2024',
-        category: 'marking_scheme',
-        batch: 'A/L 2025',
-        month: 'September',
-        isFree: false,
-        price: 500,
-        fileUrl: 'https://pdfobject.com/pdf/sample.pdf',
-        fileSize: '2.1 MB',
-        createdAt: new Date().toISOString()
-      }
-    ];
-
     if (!isSupabaseConfigured) {
       const saved = localStorage.getItem('inspire_categorized_materials');
       if (saved) {
-        try { return JSON.parse(saved); } catch {}
+        try {
+          const parsed = JSON.parse(saved);
+          return (Array.isArray(parsed) ? parsed : []).filter((m: any) => !m.id?.startsWith('mat-cat-'));
+        } catch {}
       }
-      return DEFAULT_MATERIALS;
+      return [];
     }
 
     try {
@@ -1884,9 +1809,12 @@ export const supabaseService = {
 
     const saved = localStorage.getItem('inspire_categorized_materials');
     if (saved) {
-      try { return JSON.parse(saved); } catch {}
+      try {
+        const parsed = JSON.parse(saved);
+        return (Array.isArray(parsed) ? parsed : []).filter((m: any) => !m.id?.startsWith('mat-cat-'));
+      } catch {}
     }
-    return DEFAULT_MATERIALS;
+    return [];
   },
 
   async uploadCategorizedMaterial(data: Omit<CategorizedMaterial, 'id'>): Promise<CategorizedMaterial> {
