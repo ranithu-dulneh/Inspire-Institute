@@ -494,10 +494,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
   // Faculty portrait calibrator
   const handleSavePhotoUrl = (url: string) => {
-    const trimmed = url.trim();
+    const trimmed = (url || '').trim();
     setCurrentPhotoUrl(trimmed);
     onTeacherPhotoUpdated(trimmed || null);
-    localStorage.setItem('inspire_teacher_photo_cutout', trimmed);
+    if (trimmed) {
+      localStorage.setItem('inspire_teacher_photo_cutout', trimmed);
+    } else {
+      localStorage.removeItem('inspire_teacher_photo_cutout');
+    }
 
     window.dispatchEvent(new CustomEvent('teacher-photo-updated', {
       detail: { imageUrl: trimmed || null, scale: currentScale, offsetY: currentOffset }
@@ -509,7 +513,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       body: JSON.stringify({ imageUrl: trimmed || null, scale: currentScale, offsetY: currentOffset })
     }).catch(err => console.warn('Could not persist to server:', err));
 
-    showToast('Faculty portrait updated and synced across all pages');
+    showToast(trimmed ? 'Faculty portrait updated and synced across all pages' : 'Reset to default faculty portrait');
   };
 
   const handleScaleSlider = (newScale: number) => {

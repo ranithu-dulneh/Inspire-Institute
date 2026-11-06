@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { GeneralSettings } from '../../types';
 import { DbInstitution } from '../../lib/supabase';
 import { supabaseService } from '../../services/supabaseService';
@@ -16,7 +16,12 @@ import {
   ToggleLeft, 
   ToggleRight,
   ShieldCheck,
-  AlertCircle
+  AlertCircle,
+  Upload,
+  FileImage,
+  X,
+  Check,
+  RotateCcw
 } from 'lucide-react';
 
 interface GeneralSettingsTabProps {
@@ -63,8 +68,14 @@ export const GeneralSettingsTab: React.FC<GeneralSettingsTabProps> = ({
   const [newInstLocation, setNewInstLocation] = useState<string>('');
   const [isAddingInst, setIsAddingInst] = useState<boolean>(false);
 
-  // Photo URL local input
+  // Photo Uploader & URL state
   const [photoUrlInput, setPhotoUrlInput] = useState<string>(currentPhotoUrl);
+  const [isDragging, setIsDragging] = useState<boolean>(false);
+  const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
+  const [uploadedFileSize, setUploadedFileSize] = useState<string | null>(null);
+  const [isProcessingFile, setIsProcessingFile] = useState<boolean>(false);
+  const [showManualUrl, setShowManualUrl] = useState<boolean>(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     supabaseService.getGeneralSettings().then(setBankSettings).catch(() => {});
@@ -74,6 +85,92 @@ export const GeneralSettingsTab: React.FC<GeneralSettingsTabProps> = ({
   useEffect(() => {
     setPhotoUrlInput(currentPhotoUrl);
   }, [currentPhotoUrl]);
+
+  const handleProcessImageFile = (file: File) => {
+    if (!file.type.startsWith('image/')) {
+      showToast('Please select a valid image file (PNG, JPG, or WEBP).');
+      return;
+    }
+
+    setIsProcessingFile(true);
+    const reader = new FileReader();
+
+    reader.onload = (event) => {
+      const dataUrl = event.target?.result as string;
+      if (!dataUrl) {
+        setIsProcessingFile(false);
+        return;
+      }
+
+      const img = new Image();
+      img.onload = () => {
+        const maxDimension = 1600;
+        let { width, height } = img;
+
+        if (width > maxDimension || height > maxDimension) {
+          if (width > height) {
+            height = Math.round((height * maxDimension) / width);
+            width = maxDimension;
+          } else {
+            width = Math.round((width * maxDimension) / height);
+            height = maxDimension;
+          }
+
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.drawImage(img, 0, 0, width, height);
+            const isPng = file.type === 'image/png';
+            const optimized = isPng ? canvas.toDataURL('image/png') : canvas.toDataURL('image/jpeg', 0.9);
+            setPhotoUrlInput(optimized);
+            setUploadedFileName(file.name);
+            setUploadedFileSize(`${(file.size / (1024 * 1024)).toFixed(2)} MB`);
+            setIsProcessingFile(false);
+            showToast(`Loaded ${file.name}. Click "Save & Publish" to update.`);
+            return;
+          }
+        }
+
+        setPhotoUrlInput(dataUrl);
+        setUploadedFileName(file.name);
+        setUploadedFileSize(`${(file.size / (1024 * 1024)).toFixed(2)} MB`);
+        setIsProcessingFile(false);
+        showToast(`Loaded ${file.name}. Click "Save & Publish" to update.`);
+      };
+
+      img.onerror = () => {
+        setIsProcessingFile(false);
+        showToast('Could not load image file.');
+      };
+
+      img.src = dataUrl;
+    };
+
+    reader.onerror = () => {
+      setIsProcessingFile(false);
+      showToast('Could not read image file.');
+    };
+
+    reader.readAsDataURL(file);
+  };
+
+  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      handleProcessImageFile(file);
+    }
+  };
+
+  const handleResetToDefault = () => {
+    setPhotoUrlInput('');
+    setUploadedFileName(null);
+    setUploadedFileSize(null);
+    onSavePhotoUrl('');
+    if (fileInputRef.current) fileInputRef.current.value = '';
+    showToast('Reverted to default faculty cutout.');
+  };
 
   const handleSaveBankDetails = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -164,7 +261,7 @@ export const GeneralSettingsTab: React.FC<GeneralSettingsTabProps> = ({
           }`}
         >
           <ImageIcon className="w-3.5 h-3.5 text-indigo-600" />
-          <span>Faculty Cutout Photo</span>
+          <span>Faculty Cover &amp; Portrait Photo</span>
         </button>
 
         <button
@@ -383,20 +480,43 @@ export const GeneralSettingsTab: React.FC<GeneralSettingsTabProps> = ({
       )}
 
       {/* ─────────────────────────────────────────────────────────────
-          SECTION 3: FACULTY CUTOUT PHOTO
+          SECTION 3: FACULTY COVER / PORTRAIT PHOTO (DIRECT FILE UPLOADER)
          ───────────────────────────────────────────────────────────── */}
       {activeSubSection === 'faculty' && (
-        <div className="bg-white rounded-3xl border border-slate-200/80 shadow-2xs p-6 space-y-6">
-          <div className="bg-slate-50 rounded-3xl p-6 border border-slate-200/80 grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+        <div className="bg-white rounded-3xl border border-slate-200/80 shadow-2xs p-6 sm:p-7 space-y-6">
+          <div className="border-b border-slate-100 pb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div>
+              <h3 className="text-sm font-bold text-slate-900">Faculty Cover &amp; Lead Teacher Portrait</h3>
+              <p className="text-xs text-slate-500">
+                Upload a transparent PNG cutout or photo of the lead faculty. Changes sync live across the homepage hero banner.
+              </p>
+            </div>
+            {photoUrlInput && (
+              <button
+                type="button"
+                onClick={handleResetToDefault}
+                className="self-start sm:self-auto text-xs text-rose-600 hover:text-rose-700 font-semibold flex items-center gap-1 transition-colors cursor-pointer"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                <span>Reset to Default Photo</span>
+              </button>
+            )}
+          </div>
+
+          <div className="bg-slate-50/70 rounded-3xl p-6 border border-slate-200/80 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             
-            {/* Visual Preview Box */}
-            <div className="lg:col-span-5 flex justify-center">
-              <div className="relative w-48 h-64 rounded-3xl bg-slate-100 border border-slate-300/80 overflow-hidden flex items-end justify-center shadow-inner">
-                <div className="absolute right-2 top-3 bottom-0 w-32 bg-gradient-to-b from-blue-600 to-blue-700 rounded-2xl flex items-center justify-center pointer-events-none">
-                  <span className="text-white/20 font-black text-5xl font-sans">RS</span>
+            {/* Visual Live Preview Box (Matches Homepage Hero Presentation) */}
+            <div className="lg:col-span-5 flex flex-col items-center gap-3">
+              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                Live Homepage Card Preview
+              </span>
+
+              <div className="relative w-56 h-76 rounded-3xl bg-slate-100 border-2 border-slate-300/80 overflow-hidden flex items-end justify-center shadow-lg">
+                <div className="absolute right-3 top-3 bottom-0 w-36 bg-gradient-to-b from-blue-600 to-blue-700 rounded-2xl flex items-center justify-center pointer-events-none">
+                  <span className="text-white/20 font-black text-6xl font-sans">RS</span>
                 </div>
 
-                <div className="relative z-10 w-full h-full flex items-end justify-center">
+                <div className="relative z-10 w-full h-full flex items-end justify-center pointer-events-none">
                   {photoUrlInput ? (
                     <img
                       src={photoUrlInput}
@@ -409,69 +529,220 @@ export const GeneralSettingsTab: React.FC<GeneralSettingsTabProps> = ({
                     />
                   ) : (
                     <div className="w-full h-full flex flex-col items-center justify-center p-4 text-center">
-                      <ImageIcon className="w-8 h-8 text-slate-300 mb-2" />
-                      <span className="text-[11px] text-slate-400 font-semibold">Using Default Cutout</span>
+                      <ImageIcon className="w-10 h-10 text-slate-300 mb-2" />
+                      <span className="text-xs text-slate-500 font-semibold">Using Default Cutout</span>
+                      <span className="text-[10px] text-slate-400 mt-1">Upload a custom image to replace</span>
                     </div>
                   )}
                 </div>
-                <div className="absolute bottom-0 inset-x-0 h-0.5 bg-emerald-500 z-20 pointer-events-none" />
+
+                {/* Status Badge */}
+                <div className="absolute top-2.5 left-2.5 z-20">
+                  {photoUrlInput ? (
+                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500 text-white shadow-xs">
+                      <Check className="w-3 h-3" />
+                      <span>Custom Image</span>
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-700 text-white shadow-xs">
+                      Default Preset
+                    </span>
+                  )}
+                </div>
+
+                <div className="absolute bottom-0 inset-x-0 h-1 bg-emerald-500 z-20 pointer-events-none" />
               </div>
+
+              <p className="text-[11px] text-slate-400 text-center max-w-xs">
+                Real-time alignment against the blue hero card. Use the calibration sliders below to fine-tune.
+              </p>
             </div>
 
-            {/* Calibration Controls */}
-            <div className="lg:col-span-7 space-y-5">
-              <div className="space-y-1.5 text-xs">
-                <label className="font-bold text-slate-800 block">Portrait Image URL</label>
-                <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={photoUrlInput}
-                    onChange={(e) => setPhotoUrlInput(e.target.value)}
-                    placeholder="Enter transparent PNG cutout URL"
-                    className="flex-1 px-3.5 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none"
-                  />
+            {/* Direct File Uploader & Controls */}
+            <div className="lg:col-span-7 space-y-6">
+              
+              {/* Hidden file input */}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/png,image/jpeg,image/webp,image/jpg"
+                onChange={handleFileInputChange}
+                className="hidden"
+              />
+
+              {/* Direct Drag & Drop / File Picker Area */}
+              <div className="space-y-2">
+                <label className="font-bold text-slate-800 text-xs block">
+                  Direct Cover Image Upload
+                </label>
+
+                <div
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    setIsDragging(true);
+                  }}
+                  onDragLeave={() => setIsDragging(false)}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    setIsDragging(false);
+                    const file = e.dataTransfer.files?.[0];
+                    if (file) handleProcessImageFile(file);
+                  }}
+                  onClick={() => fileInputRef.current?.click()}
+                  className={`p-6 sm:p-7 rounded-2xl border-2 border-dashed transition-all cursor-pointer flex flex-col items-center justify-center text-center gap-3 relative overflow-hidden ${
+                    isDragging
+                      ? 'border-blue-500 bg-blue-50/70 shadow-md scale-[1.01]'
+                      : 'border-slate-300 hover:border-blue-400 bg-white hover:bg-slate-50/80 shadow-2xs'
+                  }`}
+                >
+                  <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-200/60 shadow-2xs">
+                    {isProcessingFile ? (
+                      <span className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <Upload className="w-6 h-6" />
+                    )}
+                  </div>
+
+                  <div className="space-y-1">
+                    <p className="text-xs sm:text-sm font-bold text-slate-900">
+                      Click to choose file or drag &amp; drop your image here
+                    </p>
+                    <p className="text-[11px] text-slate-500">
+                      Supports transparent PNG cutout, JPG, or WEBP (Max 25MB)
+                    </p>
+                  </div>
+
                   <button
-                    onClick={() => onSavePhotoUrl(photoUrlInput)}
-                    className="px-4 py-2 rounded-xl bg-slate-950 hover:bg-slate-800 text-white text-xs font-bold transition-colors cursor-pointer"
+                    type="button"
+                    className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition-colors shadow-2xs flex items-center gap-1.5 pointer-events-none"
                   >
-                    Save &amp; Publish
+                    <FileImage className="w-3.5 h-3.5" />
+                    <span>Browse Image from Device</span>
                   </button>
                 </div>
+
+                {/* Uploaded File Info Bar */}
+                {uploadedFileName && (
+                  <div className="p-3 bg-emerald-50 border border-emerald-200/80 rounded-xl flex items-center justify-between text-xs text-emerald-900 animate-in fade-in">
+                    <div className="flex items-center gap-2 truncate">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                      <span className="font-semibold truncate">{uploadedFileName}</span>
+                      {uploadedFileSize && (
+                        <span className="text-[11px] text-emerald-700 font-sans font-medium">({uploadedFileSize})</span>
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setUploadedFileName(null);
+                        setUploadedFileSize(null);
+                        if (fileInputRef.current) fileInputRef.current.value = '';
+                      }}
+                      className="p-1 text-slate-400 hover:text-rose-600 transition-colors"
+                      title="Clear file"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                )}
               </div>
 
-              {/* Scale Slider */}
-              <div className="space-y-2 text-xs">
-                <div className="flex items-center justify-between">
-                  <span className="font-bold text-slate-800">Portrait Scale</span>
-                  <span className="font-mono font-bold text-blue-700 tabular-nums">{currentScale}%</span>
-                </div>
-                <input
-                  type="range"
-                  min="50"
-                  max="180"
-                  step="1"
-                  value={currentScale}
-                  onChange={(e) => onScaleChange(parseInt(e.target.value, 10))}
-                  className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
-                />
+              {/* Action Buttons */}
+              <div className="flex flex-wrap items-center gap-2.5 pt-1">
+                <button
+                  type="button"
+                  onClick={() => onSavePhotoUrl(photoUrlInput)}
+                  className="flex-1 sm:flex-none px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+                >
+                  <Save className="w-4 h-4" />
+                  <span>Save &amp; Publish Photo to Homepage</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setShowManualUrl(!showManualUrl)}
+                  className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition-colors cursor-pointer"
+                >
+                  {showManualUrl ? 'Hide URL Input' : 'Or Paste Image URL'}
+                </button>
               </div>
 
-              {/* Offset Slider */}
-              <div className="space-y-2 text-xs">
-                <div className="flex items-center justify-between">
-                  <span className="font-bold text-slate-800">Vertical Flush Baseline Shift</span>
-                  <span className="font-mono font-bold text-emerald-700 tabular-nums">{currentOffset}px</span>
+              {/* Collapsible Manual URL Input */}
+              {showManualUrl && (
+                <div className="p-4 rounded-2xl bg-white border border-slate-200 space-y-2 animate-in fade-in">
+                  <label className="font-bold text-slate-700 text-xs block">Hosted Direct Image URL</label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={photoUrlInput}
+                      onChange={(e) => setPhotoUrlInput(e.target.value)}
+                      placeholder="https://example.com/teacher-cutout.png"
+                      className="flex-1 px-3.5 py-2 rounded-xl border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-blue-600 font-sans"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => onSavePhotoUrl(photoUrlInput)}
+                      className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition-colors cursor-pointer"
+                    >
+                      Apply
+                    </button>
+                  </div>
                 </div>
-                <input
-                  type="range"
-                  min="-40"
-                  max="40"
-                  step="1"
-                  value={currentOffset}
-                  onChange={(e) => onOffsetChange(parseInt(e.target.value, 10))}
-                  className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-emerald-600"
-                />
+              )}
+
+              {/* Calibration Sliders */}
+              <div className="p-4 rounded-2xl bg-white border border-slate-200/90 space-y-4">
+                <div className="border-b border-slate-100 pb-2">
+                  <h4 className="text-xs font-bold text-slate-900">Portrait Alignment &amp; Scale Calibration</h4>
+                  <p className="text-[11px] text-slate-500">Fine-tune the size and vertical position to flush cleanly against the card bottom.</p>
+                </div>
+
+                {/* Scale Slider */}
+                <div className="space-y-1.5 text-xs">
+                  <div className="flex items-center justify-between">
+                    <span className="font-semibold text-slate-700">Portrait Scale</span>
+                    <span className="font-sans font-bold text-blue-700 tabular-nums">{currentScale}%</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="50"
+                    max="180"
+                    step="1"
+                    value={currentScale}
+                    onChange={(e) => onScaleChange(parseInt(e.target.value, 10))}
+                    className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
+                  />
+                  <div className="flex justify-between text-[10px] text-slate-400 font-sans">
+                    <span>50% (Smaller)</span>
+                    <span>100% (Default)</span>
+                    <span>180% (Larger)</span>
+                  </div>
+                </div>
+
+                {/* Vertical Offset Slider */}
+                <div className="space-y-1.5 text-xs pt-1">
+                  <div className="flex items-center justify-between">
+                    <span className="font-semibold text-slate-700">Vertical Flush Baseline Shift</span>
+                    <span className="font-sans font-bold text-emerald-700 tabular-nums">{currentOffset}px</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="-40"
+                    max="40"
+                    step="1"
+                    value={currentOffset}
+                    onChange={(e) => onOffsetChange(parseInt(e.target.value, 10))}
+                    className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-emerald-600"
+                  />
+                  <div className="flex justify-between text-[10px] text-slate-400 font-sans">
+                    <span>-40px (Shift Down)</span>
+                    <span>0px (Flush)</span>
+                    <span>+40px (Shift Up)</span>
+                  </div>
+                </div>
               </div>
+
             </div>
 
           </div>
