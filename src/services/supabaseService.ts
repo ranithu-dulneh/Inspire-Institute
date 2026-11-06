@@ -596,14 +596,17 @@ export const supabaseService = {
 
       const authUser = authData.user;
 
-      // 1. Check if user exists in public.admin_users (Admins get unlimited devices automatically)
+      // 1. Check if user exists in public.admin_users or is primary admin email
+      const isPrimaryAdmin = (authUser.email?.toLowerCase() === 'inspireinstitute.lms@gmail.com') ||
+                             (emailToUse.toLowerCase() === 'inspireinstitute.lms@gmail.com');
+
       const { data: adminRecord } = await supabase
         .from('admin_users')
         .select('user_id')
         .eq('user_id', authUser.id)
         .maybeSingle();
 
-      if (adminRecord) {
+      if (adminRecord || isPrimaryAdmin) {
         const adminUser: CurrentUser = {
           id: authUser.id,
           name: authUser.user_metadata?.full_name || 'Administrator',
@@ -684,13 +687,15 @@ export const supabaseService = {
       if (!user) return null;
 
       // Check admin
+      const isPrimaryAdmin = user.email?.toLowerCase() === 'inspireinstitute.lms@gmail.com';
+
       const { data: adminRecord } = await supabase
         .from('admin_users')
         .select('user_id')
         .eq('user_id', user.id)
         .maybeSingle();
 
-      if (adminRecord) {
+      if (adminRecord || isPrimaryAdmin) {
         return {
           id: user.id,
           name: user.user_metadata?.full_name || 'Administrator',
@@ -698,7 +703,7 @@ export const supabaseService = {
           indexNumber: 'ADMIN-FACULTY',
           batch: 'Executive Faculty Board',
           overallProgress: 100,
-          email: user.email || 'admin@inspire.lk',
+          email: user.email || 'inspireinstitute.lms@gmail.com',
           phone: user.phone || '+94 77 123 4567'
         };
       }

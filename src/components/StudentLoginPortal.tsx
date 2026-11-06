@@ -95,7 +95,8 @@ export const StudentLoginPortal: React.FC<StudentLoginPortalProps> = ({
           });
           return;
         } else if (res.error) {
-          const isAdminFallback = identifier.trim().toLowerCase() === 'admin' && password === '123456';
+          const cleanId = identifier.trim().toLowerCase();
+          const isAdminFallback = (cleanId === 'admin' || cleanId === 'inspireinstitute.lms@gmail.com') && (password === '123456' || password === 'admin');
           if (!isAdminFallback) {
             setIsLoading(false);
             setErrorMsg(res.error);
@@ -107,20 +108,21 @@ export const StudentLoginPortal: React.FC<StudentLoginPortalProps> = ({
       }
     }
 
-    // 2. Admin fallback check (Username: admin, Password: 123456)
-    const isAdmin = identifier.trim().toLowerCase() === 'admin' && password === '123456';
+    // 2. Admin fallback check (Username: admin or inspireinstitute.lms@gmail.com, Password: 123456)
+    const cleanId = identifier.trim().toLowerCase();
+    const isAdmin = (cleanId === 'admin' || cleanId === 'inspireinstitute.lms@gmail.com') && (password === '123456' || password === 'admin');
 
     setTimeout(() => {
       setIsLoading(false);
       if (isAdmin) {
         onLoginSuccess({
-          id: 'admin-001',
+          id: cleanId === 'inspireinstitute.lms@gmail.com' ? 'admin-inspire' : 'admin-001',
           name: 'Administrator',
           role: 'Admin',
           indexNumber: 'ADMIN-FACULTY',
           batch: 'Executive Faculty Board',
           overallProgress: 100,
-          email: 'admin@inspire-education.lk',
+          email: cleanId === 'inspireinstitute.lms@gmail.com' ? 'inspireinstitute.lms@gmail.com' : 'admin@inspire-education.lk',
           phone: '+94 77 123 4567'
         });
         onNavigate('admin');
@@ -566,21 +568,6 @@ export const StudentLoginPortal: React.FC<StudentLoginPortalProps> = ({
                   Create account / Register
                 </button>
               </p>
-            </div>
-
-            {/* Quick Access for Admin */}
-            <div className="pt-2">
-              <button
-                type="button"
-                onClick={() => {
-                  setIdentifier('admin');
-                  setPassword('123456');
-                }}
-                className="w-full py-2 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors shadow-xs"
-              >
-                <Lock className="w-3.5 h-3.5 text-emerald-400" />
-                <span>Fill Admin Credentials (admin / 123456)</span>
-              </button>
             </div>
 
           </div>
