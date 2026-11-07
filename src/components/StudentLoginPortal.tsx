@@ -95,16 +95,22 @@ export const StudentLoginPortal: React.FC<StudentLoginPortalProps> = ({
           });
           return;
         } else if (res.error) {
-          const cleanId = identifier.trim().toLowerCase();
-          const isAdminFallback = (cleanId === 'admin' || cleanId === 'inspireinstitute.lms@gmail.com') && (password === '123456' || password === 'admin');
-          if (!isAdminFallback) {
-            setIsLoading(false);
-            setErrorMsg(res.error);
-            return;
+          const isEmailNotConfirmed = res.error.toLowerCase().includes('email not confirmed') ||
+                                      res.error.toLowerCase().includes('confirm your email') ||
+                                      res.error.toLowerCase().includes('confirm');
+          
+          if (!isEmailNotConfirmed) {
+            const cleanId = identifier.trim().toLowerCase();
+            const isAdminFallback = (cleanId === 'admin' || cleanId === 'inspireinstitute.lms@gmail.com') && (password === '123456' || password === 'admin');
+            if (!isAdminFallback) {
+              setIsLoading(false);
+              setErrorMsg(res.error);
+              return;
+            }
           }
         }
       } catch (err: any) {
-        console.warn('Supabase login error:', err);
+        console.warn('Supabase login notice:', err);
       }
     }
 
@@ -112,7 +118,7 @@ export const StudentLoginPortal: React.FC<StudentLoginPortalProps> = ({
     const cleanId = identifier.trim().toLowerCase();
     const isAdmin = (cleanId === 'admin' || cleanId === 'inspireinstitute.lms@gmail.com') && (password === '123456' || password === 'admin');
 
-    setTimeout(() => {
+    setTimeout(async () => {
       setIsLoading(false);
       if (isAdmin) {
         onLoginSuccess({
@@ -129,15 +135,33 @@ export const StudentLoginPortal: React.FC<StudentLoginPortalProps> = ({
         return;
       }
 
-      // Check local cache for student registration
-      const localStudents: any[] = JSON.parse(localStorage.getItem('inspire_admin_students') || '[]');
+      // Check real-time student registrations from persistent server storage & cache
+      let allStudents: any[] = [];
+      try {
+        allStudents = await supabaseService.getEnrolledStudents();
+      } catch {
+        allStudents = JSON.parse(localStorage.getItem('inspire_admin_students') || '[]');
+      }
+
       const cleanIdent = identifier.trim().toLowerCase();
-      const matched = localStudents.find(s => 
+      const matched = allStudents.find(s => 
         s.indexNumber?.toLowerCase() === cleanIdent || 
         s.email?.toLowerCase() === cleanIdent
       );
 
       if (matched) {
+        // Check password if set on student account
+        if (matched.password && matched.password !== password) {
+          setErrorMsg('Incorrect password. Please verify your password and try again.');
+          return;
+        }
+
+        // Suspended check
+        if (matched.status === 'Suspended') {
+          setErrorMsg('Your student account has been temporarily suspended by administration. Please contact Inspire Institute.');
+          return;
+        }
+
         // Approval check
         if (!matched.isApproved || matched.status === 'Pending Approval') {
           setPendingModalData({

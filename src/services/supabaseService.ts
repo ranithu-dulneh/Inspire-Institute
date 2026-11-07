@@ -1,3 +1,4 @@
+import { safeLocalStorageSet } from '../lib/storageUtils';
 import { 
   supabase, 
   isSupabaseConfigured,
@@ -363,15 +364,15 @@ export const supabaseService = {
       localStorage.setItem('inspire_stuid_email_map', JSON.stringify(map));
     } catch {}
 
-    // Offline / demo fallback if Supabase is offline
+    // Offline / persistent fallback when Supabase is offline
     if (!isSupabaseConfigured) {
-      const localStudents: EnrolledStudent[] = JSON.parse(localStorage.getItem('inspire_admin_students') || '[]');
-      const newLocalStudent: EnrolledStudent = {
+      const newLocalStudent: EnrolledStudent & { password?: string } = {
         id: `stu-${Date.now()}`,
         indexNumber: generatedStudentId,
         fullName: fullName.trim(),
         mobile: mobile.trim(),
         email: email.trim().toLowerCase(),
+        password: password,
         batch: `A/L ${batch} Intake`,
         institution: district ? `${district} Center` : 'Inspire Online Portal',
         status: 'Pending Approval',
@@ -381,6 +382,19 @@ export const supabaseService = {
         isApproved: false,
         district: district.trim()
       };
+
+      // Persist to server disk storage
+      try {
+        await fetch('/api/students', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'register', student: newLocalStudent })
+        });
+      } catch (e) {
+        console.warn('Notice saving student to server:', e);
+      }
+
+      const localStudents: EnrolledStudent[] = JSON.parse(localStorage.getItem('inspire_admin_students') || '[]');
       localStorage.setItem('inspire_admin_students', JSON.stringify([newLocalStudent, ...localStudents]));
       window.dispatchEvent(new CustomEvent('inspire-students-updated'));
 
@@ -457,24 +471,31 @@ export const supabaseService = {
       // Automatically sign out immediately after signup so unapproved student cannot enter
       await supabase.auth.signOut().catch(() => {});
 
-      // Synchronize into local storage cache for immediate admin visibility
+      // Synchronize into persistent storage and local cache
+      const newLocalStudent: EnrolledStudent & { password?: string } = {
+        id: authUserId,
+        indexNumber: generatedStudentId,
+        fullName: fullName.trim(),
+        mobile: mobile.trim(),
+        email: email.trim().toLowerCase(),
+        password: password,
+        batch: `A/L ${batch} Intake`,
+        institution: district ? `${district} Center` : 'Inspire Online Portal',
+        status: 'Pending Approval',
+        enrolledDate: 'Today',
+        modulesAccessible: 0,
+        maxDevices: 1,
+        isApproved: false,
+        district: district.trim()
+      };
+
       try {
+        await fetch('/api/students', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'register', student: newLocalStudent })
+        });
         const localStudents: EnrolledStudent[] = JSON.parse(localStorage.getItem('inspire_admin_students') || '[]');
-        const newLocalStudent: EnrolledStudent = {
-          id: authUserId,
-          indexNumber: generatedStudentId,
-          fullName: fullName.trim(),
-          mobile: mobile.trim(),
-          email: email.trim().toLowerCase(),
-          batch: `A/L ${batch} Intake`,
-          institution: district ? `${district} Center` : 'Inspire Online Portal',
-          status: 'Pending Approval',
-          enrolledDate: 'Today',
-          modulesAccessible: 0,
-          maxDevices: 1,
-          isApproved: false,
-          district: district.trim()
-        };
         localStorage.setItem(
           'inspire_admin_students', 
           JSON.stringify([newLocalStudent, ...localStudents.filter(s => s.id !== authUserId && s.indexNumber !== generatedStudentId)])
@@ -495,6 +516,16 @@ export const supabaseService = {
   },
 
   async approveStudent(idOrUuid: string): Promise<boolean> {
+    try {
+      await fetch('/api/students', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'approve', id: idOrUuid })
+      });
+    } catch (err) {
+      console.warn('Server approve sync error:', err);
+    }
+
     if (isSupabaseConfigured) {
       try {
         await supabase
@@ -521,6 +552,16 @@ export const supabaseService = {
   },
 
   async updateStudentMaxDevices(idOrUuid: string, maxDevices: number): Promise<boolean> {
+    try {
+      await fetch('/api/students', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'device-limit', id: idOrUuid, maxDevices })
+      });
+    } catch (err) {
+      console.warn('Server maxDevices sync error:', err);
+    }
+
     if (isSupabaseConfigured) {
       try {
         await supabase
@@ -545,6 +586,32 @@ export const supabaseService = {
     window.dispatchEvent(new CustomEvent('inspire-students-updated'));
     return true;
   },
+
+  async updateStudentStatus(idOrUuid: string, status: 'Verified' | 'Suspended'): Promise<boolean> {
+    try {
+      await fetch('/api/students', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'status', id: idOrUuid, status })
+      });
+    } catch (err) {
+      console.warn('Server status sync error:', err);
+    }
+
+    try {
+      const local: EnrolledStudent[] = JSON.parse(localStorage.getItem('inspire_admin_students') || '[]');
+      const updated = local.map(s => 
+        (s.id === idOrUuid || s.indexNumber === idOrUuid) 
+          ? { ...s, status, isApproved: status === 'Verified' } 
+          : s
+      );
+      localStorage.setItem('inspire_admin_students', JSON.stringify(updated));
+    } catch {}
+
+    window.dispatchEvent(new CustomEvent('inspire-students-updated'));
+    return true;
+  },
+
 
   async loginWithSupabase(
     identifier: string,
@@ -588,6 +655,110 @@ export const supabaseService = {
       });
 
       if (authError || !authData.user) {
+        const errorMsg = authError?.message || '';
+        const isEmailNotConfirmed = errorMsg.toLowerCase().includes('email not confirmed') ||
+                                    errorMsg.toLowerCase().includes('confirm your email') ||
+                                    errorMsg.toLowerCase().includes('email_not_confirmed');
+
+        if (isEmailNotConfirmed) {
+          // The student's email has not been confirmed via automated email,
+          // but if the institution administrator has approved them, allow login!
+          const cleanIdent = identifier.trim().toUpperCase();
+          const cleanEmail = emailToUse.toLowerCase();
+
+          // 1. Fetch live student records from server persistent store
+          let serverStudents: EnrolledStudent[] = [];
+          try {
+            const resp = await fetch('/api/students');
+            if (resp.ok) {
+              const resJson = await resp.json();
+              if (Array.isArray(resJson.students)) {
+                serverStudents = resJson.students;
+              }
+            }
+          } catch {}
+
+          // 2. Fetch from local cache as well
+          const localStudents: EnrolledStudent[] = JSON.parse(localStorage.getItem('inspire_admin_students') || '[]');
+
+          // 3. Check student_profiles in Supabase
+          let profile: any = null;
+          try {
+            const { data } = await supabase
+              .from('student_profiles')
+              .select('*')
+              .or(`student_id.eq.${cleanIdent},id.eq.${cleanIdent}`)
+              .maybeSingle();
+            profile = data;
+          } catch {}
+
+          const matched: any = serverStudents.find(s => 
+            s.indexNumber?.toUpperCase() === cleanIdent || 
+            s.email?.toLowerCase() === cleanEmail ||
+            s.id === cleanIdent
+          ) || localStudents.find(s => 
+            s.indexNumber?.toUpperCase() === cleanIdent || 
+            s.email?.toLowerCase() === cleanEmail ||
+            s.id === cleanIdent
+          ) || (profile ? {
+            id: profile.id,
+            indexNumber: profile.student_id,
+            fullName: profile.full_name,
+            email: emailToUse,
+            mobile: profile.mobile_number,
+            batch: profile.course_program,
+            isApproved: profile.is_approved,
+            status: profile.is_approved ? 'Verified' : 'Pending Approval',
+            maxDevices: profile.max_devices || 1
+          } : null);
+
+          if (matched) {
+            const isApproved = matched.isApproved === true || matched.status === 'Verified' || profile?.is_approved === true;
+
+            if (isApproved) {
+              // Administrator has verified & approved this student! Allow instant login!
+              const studentId = matched.indexNumber || cleanIdent;
+              const studentName = matched.fullName || 'Enrolled Student';
+              const maxDevices = matched.maxDevices || 1;
+              const deviceCheck = await this.verifyAndRegisterDeviceSession(matched.id || studentId, maxDevices);
+
+              if (!deviceCheck.allowed) {
+                return {
+                  success: false,
+                  deviceLimitExceeded: true,
+                  currentDevices: deviceCheck.currentDevices,
+                  maxDevices: deviceCheck.maxDevices,
+                  studentId,
+                  studentName,
+                  error: `Device limit reached. Your account is permitted on ${deviceCheck.maxDevices} active device(s).`
+                };
+              }
+
+              const studentUser: CurrentUser = {
+                id: matched.id || studentId,
+                name: studentName,
+                role: 'Student',
+                indexNumber: studentId,
+                batch: matched.batch || '2026 A/L Intake',
+                overallProgress: 75,
+                email: matched.email || emailToUse,
+                phone: matched.mobile || '+94 77 123 4567'
+              };
+
+              return { success: true, user: studentUser };
+            } else {
+              // Not yet approved by administrator
+              return {
+                success: false,
+                pendingApproval: true,
+                studentId: matched.indexNumber || cleanIdent,
+                studentName: matched.fullName || 'Student',
+                error: 'Your registration is pending administrator approval. Please wait for an admin to verify your account.'
+              };
+            }
+          }
+        }
+
         return { 
           success: false, 
           error: authError?.message || 'Invalid login credentials. Please check your Student ID / Email and password.' 
@@ -1110,10 +1281,22 @@ export const supabaseService = {
   },
 
   /**
-   * Fetch real enrolled students from Supabase student_profiles table.
-   * Returns empty array if database has no rows (strictly no dummy data).
+   * Fetch real enrolled students from server persistent storage and Supabase.
    */
   async getEnrolledStudents(): Promise<EnrolledStudent[]> {
+    let serverStudents: EnrolledStudent[] = [];
+    try {
+      const resp = await fetch('/api/students');
+      if (resp.ok) {
+        const data = await resp.json();
+        if (data && Array.isArray(data.students)) {
+          serverStudents = data.students;
+        }
+      }
+    } catch (e) {
+      console.warn('Notice fetching /api/students:', e);
+    }
+
     let dbStudents: EnrolledStudent[] = [];
     if (isSupabaseConfigured) {
       try {
@@ -1140,32 +1323,49 @@ export const supabaseService = {
       }
     }
 
-    // Merge with any offline / locally cached student registrations
+    // Merge server persistent students, supabase students, and local cache
     try {
       const local: EnrolledStudent[] = JSON.parse(localStorage.getItem('inspire_admin_students') || '[]');
-      const merged = [...dbStudents];
+      const map = new Map<string, EnrolledStudent>();
+      
+      // Server is source of truth for persistent data
+      serverStudents.forEach(s => map.set(s.id || s.indexNumber, s));
+      dbStudents.forEach(s => map.set(s.id || s.indexNumber, s));
+
+      // Merge local items only if not already tracked
       local.forEach(loc => {
-        const idx = merged.findIndex(m => m.id === loc.id || m.indexNumber === loc.indexNumber);
-        if (idx >= 0) {
-          merged[idx] = { ...merged[idx], ...loc };
-        } else {
-          merged.push(loc);
+        const key = loc.id || loc.indexNumber;
+        if (!map.has(key)) {
+          map.set(key, loc);
         }
       });
+
+      const merged = Array.from(map.values());
+      localStorage.setItem('inspire_admin_students', JSON.stringify(merged));
       return merged;
     } catch {
-      return dbStudents;
+      return serverStudents.length > 0 ? serverStudents : dbStudents;
     }
   },
 
   async deleteStudent(id: string): Promise<boolean> {
+    try {
+      await fetch('/api/students', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'delete', id })
+      });
+    } catch (err) {
+      console.warn('Server delete student error:', err);
+    }
+
     const local: EnrolledStudent[] = JSON.parse(localStorage.getItem('inspire_admin_students') || '[]');
-    const updated = local.filter(s => s.id !== id);
+    const updated = local.filter(s => s.id !== id && s.indexNumber !== id);
     localStorage.setItem('inspire_admin_students', JSON.stringify(updated));
 
     if (isSupabaseConfigured) {
       try {
-        await supabase.from('student_profiles').delete().eq('id', id);
+        await supabase.from('student_profiles').delete().or(`id.eq.${id},student_id.eq.${id}`);
       } catch (err) {
         console.warn('Error deleting student from Supabase:', err);
       }
@@ -1779,39 +1979,51 @@ export const supabaseService = {
   // CATEGORIZED MATERIAL UPLOADS (TUTES, PAST PAPERS, MARKING SCHEMES)
   // -------------------------------------------------------------
   async getCategorizedMaterials(): Promise<CategorizedMaterial[]> {
-    if (!isSupabaseConfigured) {
-      const saved = localStorage.getItem('inspire_categorized_materials');
-      if (saved) {
-        try {
-          const parsed = JSON.parse(saved);
-          return (Array.isArray(parsed) ? parsed : []).filter((m: any) => !m.id?.startsWith('mat-cat-'));
-        } catch {}
-      }
-      return [];
-    }
-
+    // 1. First attempt to load from persistent server database
     try {
-      const { data, error } = await supabase
-        .from('materials')
-        .select('*')
-        .order('created_at', { ascending: false });
-
-      if (!error && data && data.length > 0) {
-        return data.map((d: any) => ({
-          id: String(d.id),
-          title: d.title,
-          category: (d.category as 'tute' | 'past_paper' | 'marking_scheme') || 'tute',
-          batch: d.batch || 'A/L 2025',
-          month: d.month || 'August',
-          isFree: d.is_free !== undefined ? Boolean(d.is_free) : (d.price === 0),
-          price: Number(d.price || 0),
-          fileUrl: d.file_url,
-          fileSize: d.file_size ? `${Math.round(d.file_size / 1024)} KB` : 'PDF Document',
-          createdAt: d.created_at
-        }));
+      const res = await fetch('/api/materials');
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success && Array.isArray(json.materials) && json.materials.length > 0) {
+          // Sanitize: never store base64 payloads in localStorage
+          const safeList = json.materials.map((m: any) => ({
+            ...m,
+            fileUrl: m.fileUrl?.startsWith('data:') ? '' : m.fileUrl
+          }));
+          safeLocalStorageSet('inspire_categorized_materials', JSON.stringify(safeList));
+          return json.materials;
+        }
       }
     } catch {}
 
+    // 2. Fall back to Supabase if configured
+    if (isSupabaseConfigured) {
+      try {
+        const { data, error } = await supabase
+          .from('materials')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (!error && data && data.length > 0) {
+          const mapped = data.map((d: any) => ({
+            id: String(d.id),
+            title: d.title,
+            category: (d.category as 'tute' | 'past_paper' | 'marking_scheme') || 'tute',
+            batch: d.batch || 'A/L 2025',
+            month: d.month || 'August',
+            isFree: d.is_free !== undefined ? Boolean(d.is_free) : (d.price === 0),
+            price: Number(d.price || 0),
+            fileUrl: d.file_url,
+            fileSize: d.file_size ? `${Math.round(d.file_size / 1024)} KB` : 'PDF Document',
+            createdAt: d.created_at
+          }));
+          safeLocalStorageSet('inspire_categorized_materials', JSON.stringify(mapped));
+          return mapped;
+        }
+      } catch {}
+    }
+
+    // 3. Fall back to localStorage
     const saved = localStorage.getItem('inspire_categorized_materials');
     if (saved) {
       try {
@@ -1823,14 +2035,69 @@ export const supabaseService = {
   },
 
   async uploadCategorizedMaterial(data: Omit<CategorizedMaterial, 'id'>): Promise<CategorizedMaterial> {
+    let finalUrl = data.fileUrl;
+    let finalSize = data.fileSize || '3.5 MB';
+    let assignedId = `cat-mat-${Date.now()}`;
+
+    // If fileUrl is a base64 data string, upload to Cloudflare R2 / Server storage via /api/upload-document
+    if (data.fileUrl && data.fileUrl.startsWith('data:')) {
+      try {
+        const res = await fetch('/api/upload-document', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            dataUrl: data.fileUrl,
+            title: data.title,
+            category: data.category,
+            batch: data.batch,
+            month: data.month,
+            isFree: data.isFree,
+            price: data.price
+          })
+        });
+
+        if (res.ok) {
+          const result = await res.json();
+          if (result.success && result.material) {
+            finalUrl = result.url || result.material.fileUrl;
+            finalSize = result.material.fileSize || finalSize;
+            assignedId = result.material.id || assignedId;
+          }
+        }
+      } catch (uploadErr) {
+        console.warn('Document server upload notice, proceeding with payload:', uploadErr);
+      }
+    }
+
+    // Safety fallback: NEVER allow base64 string to be stored in localStorage
+    const urlForStorage = (finalUrl && !finalUrl.startsWith('data:')) 
+      ? finalUrl 
+      : `/uploads/documents/${assignedId}.pdf`;
+
     const newMaterial: CategorizedMaterial = {
       ...data,
-      id: `cat-mat-${Date.now()}`
+      id: assignedId,
+      fileUrl: urlForStorage,
+      fileSize: finalSize
     };
 
     const existing = await this.getCategorizedMaterials();
-    const updated = [newMaterial, ...existing];
-    localStorage.setItem('inspire_categorized_materials', JSON.stringify(updated));
+    // Sanitize all items before storing to guarantee zero base64 entries
+    const safeExisting = existing.map(m => ({
+      ...m,
+      fileUrl: m.fileUrl?.startsWith('data:') ? '' : m.fileUrl
+    }));
+    const updated = [newMaterial, ...safeExisting.filter(m => m.id !== assignedId)];
+    safeLocalStorageSet('inspire_categorized_materials', JSON.stringify(updated));
+
+    // Also persist metadata to /api/materials
+    try {
+      fetch('/api/materials', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ material: newMaterial })
+      }).catch(() => {});
+    } catch {}
 
     if (isSupabaseConfigured) {
       try {
@@ -1838,7 +2105,7 @@ export const supabaseService = {
           .from('materials')
           .insert({
             title: data.title,
-            file_url: data.fileUrl,
+            file_url: urlForStorage,
             category: data.category,
             is_free: data.isFree,
             price: data.price,
@@ -1861,7 +2128,16 @@ export const supabaseService = {
   async deleteCategorizedMaterial(id: string): Promise<boolean> {
     const existing = await this.getCategorizedMaterials();
     const updated = existing.filter(m => m.id !== id);
-    localStorage.setItem('inspire_categorized_materials', JSON.stringify(updated));
+    safeLocalStorageSet('inspire_categorized_materials', JSON.stringify(updated));
+
+    // Persist deletion to server database
+    try {
+      fetch('/api/materials', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'delete', id })
+      }).catch(() => {});
+    } catch {}
 
     if (isSupabaseConfigured) {
       try {

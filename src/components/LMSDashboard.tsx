@@ -114,6 +114,7 @@ export const LMSDashboard: React.FC<LMSDashboardProps> = ({
   const [liveClassesList, setLiveClassesList] = useState<LiveClass[]>([]);
 
   useEffect(() => {
+    lessonService.fetchLessons().then(res => setLessonsList(res)).catch(() => {});
     lessonService.syncWithSupabase().then(res => setLessonsList(res)).catch(() => {});
     supabaseService.getPastPapers().then(res => setPapersList(res)).catch(() => {});
     supabaseService.getStudyMaterials().then(res => setTutesList(res)).catch(() => {});

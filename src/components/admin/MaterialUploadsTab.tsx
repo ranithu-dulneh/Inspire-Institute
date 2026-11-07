@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { CategorizedMaterial } from '../../types';
 import { supabaseService } from '../../services/supabaseService';
 import { 
@@ -12,7 +12,10 @@ import {
   Tag, 
   Layers, 
   Calendar,
-  AlertCircle
+  AlertCircle,
+  Cloud,
+  Database,
+  HardDrive
 } from 'lucide-react';
 import { BATCH_LIST, MONTH_LIST } from '../../services/lessonService';
 
@@ -29,6 +32,25 @@ export const MaterialUploadsTab: React.FC<MaterialUploadsTabProps> = ({
 }) => {
   const [categoryFilter, setCategoryFilter] = useState<'all' | 'tute' | 'past_paper' | 'marking_scheme'>('all');
   
+  // Storage connectivity state
+  const [storageStatus, setStorageStatus] = useState<{
+    cloudflareConfigured: boolean;
+    storageType: string;
+    publicBase: string;
+    bucketName: string;
+  } | null>(null);
+
+  useEffect(() => {
+    fetch('/api/storage-status')
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          setStorageStatus(data);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   // New material form state
   const [title, setTitle] = useState<string>('');
   const [category, setCategory] = useState<'tute' | 'past_paper' | 'marking_scheme'>('tute');
@@ -73,6 +95,38 @@ export const MaterialUploadsTab: React.FC<MaterialUploadsTabProps> = ({
     setErrorMessage('');
 
     try {
+      let resolvedFileUrl = fileUrl.trim();
+      let calculatedFileSize = '3.5 MB';
+
+      // If user selected a local file, upload to Cloudflare R2 / Server storage first
+      if (fileUrl.startsWith('data:')) {
+        const resp = await fetch('/api/upload-document', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            dataUrl: fileUrl,
+            fileName: fileName || `${title.trim()}.pdf`,
+            category,
+            batch,
+            month,
+            title: title.trim(),
+            isFree,
+            price: isFree ? 0 : Number(price || 0)
+          })
+        });
+
+        if (!resp.ok) {
+          const errJson = await resp.json().catch(() => ({}));
+          throw new Error(errJson.error || `Failed to upload document to storage (${resp.status})`);
+        }
+
+        const uploadData = await resp.json();
+        if (uploadData.success && (uploadData.url || uploadData.material?.fileUrl)) {
+          resolvedFileUrl = uploadData.url || uploadData.material.fileUrl;
+          calculatedFileSize = uploadData.material?.fileSize || calculatedFileSize;
+        }
+      }
+
       await supabaseService.uploadCategorizedMaterial({
         title: title.trim(),
         category,
@@ -80,8 +134,8 @@ export const MaterialUploadsTab: React.FC<MaterialUploadsTabProps> = ({
         month,
         isFree,
         price: isFree ? 0 : Number(price || 0),
-        fileUrl: fileUrl.trim(),
-        fileSize: '3.8 MB'
+        fileUrl: resolvedFileUrl,
+        fileSize: calculatedFileSize
       });
 
       showToast(`Material "${title.trim()}" published successfully!`);
@@ -92,6 +146,7 @@ export const MaterialUploadsTab: React.FC<MaterialUploadsTabProps> = ({
       setPrice(0);
       onRefresh();
     } catch (err: any) {
+      console.error('Material upload error:', err);
       setErrorMessage(err?.message || 'Failed to upload material.');
     } finally {
       setIsUploading(false);
@@ -117,13 +172,32 @@ export const MaterialUploadsTab: React.FC<MaterialUploadsTabProps> = ({
     <div className="space-y-8 text-left">
       
       {/* Header */}
-      <div>
-        <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
-          Curriculum Material Uploads &amp; Categorization
-        </h2>
-        <p className="text-xs sm:text-sm text-slate-500">
-          Upload and classify student study materials as Tutes, Past Papers, or Marking Schemes with free or paid access pricing.
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div>
+          <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
+            Curriculum Material Uploads &amp; Categorization
+          </h2>
+          <p className="text-xs sm:text-sm text-slate-500">
+            Upload and classify student study materials as Tutes, Past Papers, or Marking Schemes with free or paid access pricing.
+          </p>
+        </div>
+
+        {/* Live Storage Indicator Badge */}
+        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-semibold shrink-0 bg-slate-50 border-slate-200 text-slate-700">
+          {storageStatus?.cloudflareConfigured ? (
+            <>
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <Cloud className="w-3.5 h-3.5 text-blue-600" />
+              <span>Cloudflare R2 Storage</span>
+            </>
+          ) : (
+            <>
+              <span className="w-2 h-2 rounded-full bg-blue-500" />
+              <HardDrive className="w-3.5 h-3.5 text-slate-600" />
+              <span>Server Storage Active</span>
+            </>
+          )}
+        </div>
       </div>
 
       {/* Upload New Material Form */}

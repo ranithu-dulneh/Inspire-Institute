@@ -21,7 +21,9 @@ import {
   FileImage,
   X,
   Check,
-  RotateCcw
+  RotateCcw,
+  Cloud,
+  HardDrive
 } from 'lucide-react';
 
 interface GeneralSettingsTabProps {
@@ -74,12 +76,25 @@ export const GeneralSettingsTab: React.FC<GeneralSettingsTabProps> = ({
   const [uploadedFileName, setUploadedFileName] = useState<string | null>(null);
   const [uploadedFileSize, setUploadedFileSize] = useState<string | null>(null);
   const [isProcessingFile, setIsProcessingFile] = useState<boolean>(false);
+  const [isSavingCover, setIsSavingCover] = useState<boolean>(false);
   const [showManualUrl, setShowManualUrl] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Live storage status
+  const [storageStatus, setStorageStatus] = useState<{
+    cloudflareConfigured: boolean;
+    storageType: string;
+    publicBase: string;
+    bucketName: string;
+  } | null>(null);
 
   useEffect(() => {
     supabaseService.getGeneralSettings().then(setBankSettings).catch(() => {});
     supabaseService.getInstitutions().then(setInstitutes).catch(() => {});
+    fetch('/api/storage-status')
+      .then(res => res.json())
+      .then(d => { if (d.success) setStorageStatus(d); })
+      .catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -128,7 +143,7 @@ export const GeneralSettingsTab: React.FC<GeneralSettingsTabProps> = ({
             setUploadedFileName(file.name);
             setUploadedFileSize(`${(file.size / (1024 * 1024)).toFixed(2)} MB`);
             setIsProcessingFile(false);
-            showToast(`Loaded ${file.name}. Click "Save & Publish" to update.`);
+            showToast(`Loaded ${file.name}. Click "Save & Publish" to upload to storage.`);
             return;
           }
         }
@@ -137,7 +152,7 @@ export const GeneralSettingsTab: React.FC<GeneralSettingsTabProps> = ({
         setUploadedFileName(file.name);
         setUploadedFileSize(`${(file.size / (1024 * 1024)).toFixed(2)} MB`);
         setIsProcessingFile(false);
-        showToast(`Loaded ${file.name}. Click "Save & Publish" to update.`);
+        showToast(`Loaded ${file.name}. Click "Save & Publish" to upload to storage.`);
       };
 
       img.onerror = () => {
@@ -170,6 +185,49 @@ export const GeneralSettingsTab: React.FC<GeneralSettingsTabProps> = ({
     onSavePhotoUrl('');
     if (fileInputRef.current) fileInputRef.current.value = '';
     showToast('Reverted to default faculty cutout.');
+  };
+
+  const handleSaveCoverPhoto = async () => {
+    if (!photoUrlInput) {
+      handleResetToDefault();
+      return;
+    }
+
+    setIsSavingCover(true);
+    try {
+      if (photoUrlInput.startsWith('data:image/')) {
+        const resp = await fetch('/api/upload-cover', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            dataUrl: photoUrlInput,
+            scale: currentScale,
+            offsetY: currentOffset
+          })
+        });
+
+        if (!resp.ok) {
+          throw new Error('Upload to storage failed');
+        }
+
+        const data = await resp.json();
+        if (data.success && data.url) {
+          setPhotoUrlInput(data.url);
+          onSavePhotoUrl(data.url);
+          showToast(data.message || 'Cover photo uploaded to storage and published live!');
+          return;
+        }
+      }
+
+      onSavePhotoUrl(photoUrlInput);
+      showToast('Cover photo saved and published live to homepage!');
+    } catch (err) {
+      console.error('Error saving cover photo to storage:', err);
+      onSavePhotoUrl(photoUrlInput);
+      showToast('Photo published to homepage.');
+    } finally {
+      setIsSavingCover(false);
+    }
   };
 
   const handleSaveBankDetails = async (e: React.FormEvent) => {
@@ -491,16 +549,35 @@ export const GeneralSettingsTab: React.FC<GeneralSettingsTabProps> = ({
                 Upload a transparent PNG cutout or photo of the lead faculty. Changes sync live across the homepage hero banner.
               </p>
             </div>
-            {photoUrlInput && (
-              <button
-                type="button"
-                onClick={handleResetToDefault}
-                className="self-start sm:self-auto text-xs text-rose-600 hover:text-rose-700 font-semibold flex items-center gap-1 transition-colors cursor-pointer"
-              >
-                <RotateCcw className="w-3.5 h-3.5" />
-                <span>Reset to Default Photo</span>
-              </button>
-            )}
+            <div className="flex items-center gap-3">
+              {/* Storage Status Badge */}
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-[11px] font-semibold shrink-0 bg-slate-50 border-slate-200 text-slate-700">
+                {storageStatus?.cloudflareConfigured ? (
+                  <>
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                    <Cloud className="w-3 h-3 text-blue-600" />
+                    <span>Cloudflare R2</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="w-2 h-2 rounded-full bg-blue-500" />
+                    <HardDrive className="w-3 h-3 text-slate-600" />
+                    <span>Server Storage</span>
+                  </>
+                )}
+              </div>
+
+              {photoUrlInput && (
+                <button
+                  type="button"
+                  onClick={handleResetToDefault}
+                  className="self-start sm:self-auto text-xs text-rose-600 hover:text-rose-700 font-semibold flex items-center gap-1 transition-colors cursor-pointer"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" />
+                  <span>Reset to Default</span>
+                </button>
+              )}
+            </div>
           </div>
 
           <div className="bg-slate-50/70 rounded-3xl p-6 border border-slate-200/80 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
@@ -652,11 +729,21 @@ export const GeneralSettingsTab: React.FC<GeneralSettingsTabProps> = ({
               <div className="flex flex-wrap items-center gap-2.5 pt-1">
                 <button
                   type="button"
-                  onClick={() => onSavePhotoUrl(photoUrlInput)}
-                  className="flex-1 sm:flex-none px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer active:scale-95"
+                  disabled={isSavingCover || isProcessingFile}
+                  onClick={handleSaveCoverPhoto}
+                  className="flex-1 sm:flex-none px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white text-xs font-bold transition-all shadow-sm flex items-center justify-center gap-2 cursor-pointer active:scale-95"
                 >
-                  <Save className="w-4 h-4" />
-                  <span>Save &amp; Publish Photo to Homepage</span>
+                  {isSavingCover ? (
+                    <>
+                      <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      <span>Uploading to Storage...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Save className="w-4 h-4" />
+                      <span>Save &amp; Publish Photo to Homepage</span>
+                    </>
+                  )}
                 </button>
 
                 <button
@@ -682,10 +769,11 @@ export const GeneralSettingsTab: React.FC<GeneralSettingsTabProps> = ({
                     />
                     <button
                       type="button"
-                      onClick={() => onSavePhotoUrl(photoUrlInput)}
-                      className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition-colors cursor-pointer"
+                      disabled={isSavingCover}
+                      onClick={handleSaveCoverPhoto}
+                      className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition-colors cursor-pointer disabled:opacity-50"
                     >
-                      Apply
+                      Apply &amp; Save
                     </button>
                   </div>
                 </div>

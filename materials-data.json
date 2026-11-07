@@ -1,0 +1,38 @@
+[
+  {
+    "id": "cat-mat-01",
+    "title": "LKAS 01 Presentation of Financial Statements Comprehensive Tute",
+    "category": "tute",
+    "batch": "A/L 2026",
+    "month": "August",
+    "isFree": true,
+    "price": 0,
+    "fileUrl": "https://pub-13c8a61be13043eeb6acf002759522b9.r2.dev/tutes/LKAS-01-Accounting-Theory-Tute.pdf",
+    "fileSize": "3.8 MB",
+    "createdAt": "2025-08-15T10:00:00.000Z"
+  },
+  {
+    "id": "cat-mat-02",
+    "title": "2024 G.C.E. A/L Accounting Official Model Paper (Sinhala Medium)",
+    "category": "past_paper",
+    "batch": "A/L 2025",
+    "month": "September",
+    "isFree": true,
+    "price": 0,
+    "fileUrl": "https://pub-13c8a61be13043eeb6acf002759522b9.r2.dev/papers/2024-AL-Accounting-Model-Paper.pdf",
+    "fileSize": "4.2 MB",
+    "createdAt": "2025-09-02T12:00:00.000Z"
+  },
+  {
+    "id": "cat-mat-03",
+    "title": "2024 Accounting Final Assessment Scheme with Marking Rubric",
+    "category": "marking_scheme",
+    "batch": "A/L 2025",
+    "month": "September",
+    "isFree": false,
+    "price": 500,
+    "fileUrl": "https://pub-13c8a61be13043eeb6acf002759522b9.r2.dev/schemes/2024-Accounting-Marking-Scheme.pdf",
+    "fileSize": "2.1 MB",
+    "createdAt": "2025-09-05T14:30:00.000Z"
+  }
+]

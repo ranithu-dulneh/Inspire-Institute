@@ -1,6 +1,7 @@
 import { LessonModule, LessonSession, VideoModule } from '../types';
 import { supabase, isSupabaseConfigured, resolveR2Url } from '../lib/supabase';
 import { supabaseService } from './supabaseService';
+import { safeLocalStorageSet } from '../lib/storageUtils';
 
 const STORAGE_KEY = 'inspire_lesson_modules';
 
@@ -56,43 +57,49 @@ export function sessionToVideoModule(session: LessonSession, lesson?: LessonModu
 
 export const lessonService = {
   /**
-   * Get all lessons from localStorage. Strictly returns empty array if no real data is present.
+   * Get all lessons from localStorage. If empty or in background, fetches from /api/lessons.
    */
   getLessons(): LessonModule[] {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) {
-          // Strictly purge any legacy mock data (e.g. fake sample lessons with Rick Astley URL)
-          const realOnly = parsed.filter(les => {
-            const isMockId = les.id === 'les-01' || les.id === 'les-02' || les.id === 'les-03' || les.id === 'les-04';
-            const hasMockVideo = les.sessions?.some((s: any) => s.youtubeUrl?.includes('dQw4w9WgXcQ'));
-            const isMockTitle = typeof les.title === 'string' && (
-              les.title.includes('Financial Statements & LKAS 01 Presentation') ||
-              les.title.includes('Partnership Accounts & Profit Sharing') ||
-              les.title.includes('Manufacturing Accounts & Costing')
-            );
-            return !(isMockId && (hasMockVideo || isMockTitle));
-          });
-
-          if (realOnly.length !== parsed.length) {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(realOnly));
-          }
-          return realOnly;
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
         }
       } catch (err) {
         console.warn('Failed to parse cached lessons:', err);
       }
     }
+    // Asynchronously trigger server sync if not already done
+    this.fetchLessons().catch(() => {});
     return [];
+  },
+
+  /**
+   * Fetch lessons from server database (/api/lessons) and persist to local cache
+   */
+  async fetchLessons(): Promise<LessonModule[]> {
+    try {
+      const res = await fetch('/api/lessons');
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && Array.isArray(data.lessons)) {
+          this.saveLessons(data.lessons);
+          return data.lessons;
+        }
+      }
+    } catch (err) {
+      console.warn('Failed to fetch lessons from server database:', err);
+    }
+    return this.getLessons();
   },
 
   /**
    * Save lessons to local storage and broadcast change event across application
    */
   saveLessons(lessons: LessonModule[]): void {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(lessons));
+    safeLocalStorageSet(STORAGE_KEY, JSON.stringify(lessons));
     window.dispatchEvent(new CustomEvent('inspire-lessons-updated', { detail: lessons }));
   },
 
@@ -271,6 +278,16 @@ export const lessonService = {
     const currentLessons = this.getLessons();
     const updated = [newLesson, ...currentLessons];
     this.saveLessons(updated);
+
+    // Persist to server database (/api/lessons)
+    try {
+      fetch('/api/lessons', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'create-lesson', lesson: newLesson })
+      }).catch(e => console.warn('Could not persist lesson to backend:', e));
+    } catch {}
+
     return newLesson;
   },
 
@@ -338,6 +355,16 @@ export const lessonService = {
     });
 
     this.saveLessons(updated);
+
+    // Persist session to server database (/api/lessons)
+    try {
+      fetch('/api/lessons', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'add-session', lessonId: data.lessonId, session: newSession })
+      }).catch(e => console.warn('Could not persist session to backend:', e));
+    } catch {}
+
     return newSession;
   },
 
@@ -365,6 +392,15 @@ export const lessonService = {
       return les;
     });
     this.saveLessons(updated);
+
+    // Delete session in server database
+    try {
+      fetch('/api/lessons', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'delete-session', lessonId, sessionId })
+      }).catch(e => console.warn('Could not delete session on backend:', e));
+    } catch {}
   },
 
   /**
@@ -383,5 +419,22 @@ export const lessonService = {
     const currentLessons = this.getLessons();
     const updated = currentLessons.filter(les => les.id !== lessonId);
     this.saveLessons(updated);
+
+    // Delete lesson in server database
+    try {
+      fetch('/api/lessons', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'delete-lesson', lessonId })
+      }).catch(e => console.warn('Could not delete lesson on backend:', e));
+    } catch {}
   }
 };
+
+// Initial background sync with server database
+if (typeof window !== 'undefined') {
+  setTimeout(() => {
+    lessonService.fetchLessons().catch(() => {});
+  }, 100);
+}
+

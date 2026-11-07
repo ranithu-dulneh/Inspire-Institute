@@ -1,0 +1,73 @@
+[
+  {
+    "id": "les-lkas-01",
+    "title": "LKAS 01 & Financial Statements Presentation",
+    "batch": "A/L 2026",
+    "description": "Comprehensive analysis of financial statements preparation according to LKAS 01 standards, statement of financial position, and comprehensive income.",
+    "price": 3000,
+    "created_at": "2025-08-15T09:00:00.000Z",
+    "sessions": [
+      {
+        "id": "ses-lkas-01-1",
+        "lessonId": "les-lkas-01",
+        "title": "LKAS 01 Framework & Income Statement Formats",
+        "month": "August",
+        "youtubeUrl": "https://www.youtube.com/watch?v=kXYiU_JCYtU",
+        "duration": "1h 45m",
+        "isFree": true,
+        "price": 0,
+        "description": "Introduction to LKAS 01 accounting frameworks and revenue recognition."
+      },
+      {
+        "id": "ses-lkas-01-2",
+        "lessonId": "les-lkas-01",
+        "title": "Comprehensive Income & Equity Changes Statement",
+        "month": "August",
+        "duration": "2h 10m",
+        "isFree": false,
+        "price": 3000,
+        "description": "Statement of changes in equity and notes to financial statements."
+      }
+    ]
+  },
+  {
+    "id": "les-part-02",
+    "title": "Partnership Accounting & Profit Sharing",
+    "batch": "A/L 2026",
+    "description": "Full syllabus coverage of partnership formations, current and capital accounts, partner admissions, retirements, and dissolution accounts.",
+    "price": 3000,
+    "created_at": "2025-09-01T09:00:00.000Z",
+    "sessions": [
+      {
+        "id": "ses-part-02-1",
+        "lessonId": "les-part-02",
+        "title": "Partnership Capital & Current Accounts Structure",
+        "month": "September",
+        "duration": "1h 50m",
+        "isFree": false,
+        "price": 3000,
+        "description": "Rules under Partnership Act 1890 and partnership agreement adjustments."
+      }
+    ]
+  },
+  {
+    "id": "les-cost-03",
+    "title": "Manufacturing Accounts & Cost Accounting Principles",
+    "batch": "A/L 2025",
+    "description": "Prime costs, factory overheads, work in progress valuations, and manufacturing profit accounting for industrial entities.",
+    "price": 3000,
+    "created_at": "2025-09-15T09:00:00.000Z",
+    "sessions": [
+      {
+        "id": "ses-cost-03-1",
+        "lessonId": "les-cost-03",
+        "title": "Direct Costs, Factory Overheads & WIP Accounting",
+        "month": "September",
+        "duration": "2h 00m",
+        "isFree": true,
+        "price": 0,
+        "description": "Factory production statement preparation and cost classification."
+      }
+    ]
+  }
+]

@@ -128,18 +128,38 @@ export const AdminPanelModal: React.FC<AdminPanelModalProps> = ({
     }
   };
 
-  const handleSaveTeacherPhoto = (urlToSave: string) => {
-    const trimmed = urlToSave.trim();
-    if (trimmed) {
-      localStorage.setItem('inspire_teacher_photo_cutout', trimmed);
+  const handleSaveTeacherPhoto = async (urlToSave: string) => {
+    let trimmed = urlToSave.trim();
+    if (trimmed.startsWith('data:image/')) {
+      try {
+        const resp = await fetch('/api/upload-cover', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ dataUrl: trimmed, scale: teacherPhotoScale, offsetY: teacherPhotoOffsetY })
+        });
+        const data = await resp.json();
+        if (data.success && data.url) {
+          trimmed = data.url;
+        }
+      } catch (err) {
+        console.warn('Upload cover storage warning:', err);
+      }
+    }
+
+    if (trimmed && !trimmed.startsWith('data:')) {
+      try {
+        localStorage.setItem('inspire_teacher_photo_cutout', trimmed);
+      } catch {}
       setTeacherPhotoUrl(trimmed);
       onTeacherPhotoUpdated?.(trimmed);
       broadcastAndSync(trimmed, teacherPhotoScale, teacherPhotoOffsetY);
     } else {
-      localStorage.removeItem('inspire_teacher_photo_cutout');
-      setTeacherPhotoUrl('');
-      onTeacherPhotoUpdated?.(null);
-      broadcastAndSync(null, teacherPhotoScale, teacherPhotoOffsetY);
+      try {
+        localStorage.removeItem('inspire_teacher_photo_cutout');
+      } catch {}
+      setTeacherPhotoUrl(trimmed.startsWith('data:') ? '' : trimmed);
+      onTeacherPhotoUpdated?.(trimmed.startsWith('data:') ? null : trimmed);
+      broadcastAndSync(trimmed.startsWith('data:') ? null : trimmed, teacherPhotoScale, teacherPhotoOffsetY);
     }
 
     setTeacherPhotoSavedNotice(true);

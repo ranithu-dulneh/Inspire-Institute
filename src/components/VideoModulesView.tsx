@@ -87,6 +87,12 @@ export const VideoModulesView: React.FC<VideoModulesViewProps> = ({
 
   // Sync with Supabase on mount
   useEffect(() => {
+    lessonService.fetchLessons()
+      .then(fetched => {
+        if (fetched && fetched.length > 0) setLessons(fetched);
+      })
+      .catch(() => {});
+
     lessonService.syncWithSupabase()
       .then(synced => setLessons(synced))
       .catch(() => {});

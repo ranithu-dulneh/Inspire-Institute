@@ -186,8 +186,16 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       .then(res => setPapersList(res))
       .catch(() => {});
 
+    lessonService.fetchLessons()
+      .then(fetched => {
+        if (fetched && fetched.length > 0) setLessonsList(fetched);
+      })
+      .catch(() => {});
+
     lessonService.syncWithSupabase()
-      .then(synced => setLessonsList(synced))
+      .then(synced => {
+        if (synced && synced.length > 0) setLessonsList(synced);
+      })
       .catch(() => {});
 
     refreshSlips();
@@ -289,31 +297,33 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     showToast(`Updated allowed devices to ${label} for ${student.fullName}`);
   };
 
-  const handleToggleSuspendStudent = (id: string) => {
+  const handleToggleSuspendStudent = async (id: string) => {
+    const targetStudent = students.find(s => s.id === id);
+    const nextStatus = targetStudent?.status === 'Suspended' ? 'Verified' : 'Suspended';
+    await supabaseService.updateStudentStatus(id, nextStatus as 'Verified' | 'Suspended');
     setStudents(prev => {
       const updated = prev.map(s => {
         if (s.id === id) {
-          const nextStatus = s.status === 'Suspended' ? 'Verified' : 'Suspended';
-          return { ...s, status: nextStatus as 'Verified' | 'Suspended' };
+          return { ...s, status: nextStatus as 'Verified' | 'Suspended', isApproved: nextStatus === 'Verified' };
         }
         return s;
       });
       localStorage.setItem('inspire_admin_students', JSON.stringify(updated));
       return updated;
     });
-    showToast('Student status updated');
+    showToast(`Student status updated to ${nextStatus}`);
   };
 
-  const handleAddStudentSubmit = (e: React.FormEvent) => {
+  const handleAddStudentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newStudent.fullName.trim() || !newStudent.mobile.trim()) return;
 
     const newEntry: EnrolledStudent = {
       id: `stu-${Date.now()}`,
       indexNumber: `2026-${Math.floor(1000 + Math.random() * 9000)}`,
-      fullName: newStudent.fullName,
-      mobile: newStudent.mobile,
-      email: newStudent.email || `${newStudent.fullName.toLowerCase().replace(/\s+/g, '.')}@student.lk`,
+      fullName: newStudent.fullName.trim(),
+      mobile: newStudent.mobile.trim(),
+      email: newStudent.email?.trim() || `${newStudent.fullName.toLowerCase().replace(/\s+/g, '.')}@student.lk`,
       batch: newStudent.batch,
       institution: newStudent.institution,
       status: 'Verified',
@@ -322,6 +332,16 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       maxDevices: 1,
       isApproved: true
     };
+
+    try {
+      await fetch('/api/students', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'register', student: newEntry })
+      });
+    } catch (err) {
+      console.warn('Notice saving new student to server:', err);
+    }
 
     setStudents(prev => {
       const updated = [newEntry, ...prev];
@@ -495,14 +515,36 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   };
 
   // Faculty portrait calibrator
-  const handleSavePhotoUrl = (url: string) => {
-    const trimmed = (url || '').trim();
+  const handleSavePhotoUrl = async (url: string) => {
+    let trimmed = (url || '').trim();
+
+    // If a base64 image dataUrl was provided, upload to persistent storage
+    if (trimmed.startsWith('data:image/')) {
+      try {
+        const resp = await fetch('/api/upload-cover', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ dataUrl: trimmed, scale: currentScale, offsetY: currentOffset })
+        });
+        const data = await resp.json();
+        if (data.success && data.url) {
+          trimmed = data.url;
+        }
+      } catch (err) {
+        console.warn('Notice uploading cover photo to storage:', err);
+      }
+    }
+
     setCurrentPhotoUrl(trimmed);
     onTeacherPhotoUpdated(trimmed || null);
-    if (trimmed) {
-      localStorage.setItem('inspire_teacher_photo_cutout', trimmed);
+    if (trimmed && !trimmed.startsWith('data:')) {
+      try {
+        localStorage.setItem('inspire_teacher_photo_cutout', trimmed);
+      } catch {}
     } else {
-      localStorage.removeItem('inspire_teacher_photo_cutout');
+      try {
+        localStorage.removeItem('inspire_teacher_photo_cutout');
+      } catch {}
     }
 
     window.dispatchEvent(new CustomEvent('teacher-photo-updated', {
@@ -515,7 +557,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       body: JSON.stringify({ imageUrl: trimmed || null, scale: currentScale, offsetY: currentOffset })
     }).catch(err => console.warn('Could not persist to server:', err));
 
-    showToast(trimmed ? 'Faculty portrait updated and synced across all pages' : 'Reset to default faculty portrait');
+    showToast(trimmed ? 'Faculty portrait saved to storage and synced across all pages' : 'Reset to default faculty portrait');
   };
 
   const handleScaleSlider = (newScale: number) => {
