@@ -212,6 +212,7 @@ export interface CurrentUser {
   id: string;
   name: string;
   role: 'Student' | 'Tutor' | 'Parent' | 'Admin';
+  isAdmin?: boolean;
   indexNumber: string;
   batch: string;
   overallProgress: number;

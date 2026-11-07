@@ -4,6 +4,8 @@ import { lessonService, sessionToVideoModule } from '../services/lessonService';
 import { supabaseService } from '../services/supabaseService';
 import { ModulePaymentModal, UnlockedModule } from './ModulePaymentModal';
 import { InspireLogo } from './InspireLogo';
+import { ModuleProgressChart } from './ModuleProgressChart';
+import { YouTubeUploaderModal } from './YouTubeUploaderModal';
 import { 
   Search, 
   Play, 
@@ -77,6 +79,7 @@ export const LMSDashboard: React.FC<LMSDashboardProps> = ({
   const [sidebarSearch, setSidebarSearch] = useState<string>('');
   const [selectedTopicFilter, setSelectedTopicFilter] = useState<string>('all');
   const [selectedPaymentModule, setSelectedPaymentModule] = useState<UnlockedModule | null>(null);
+  const [isYouTubeUploadOpen, setIsYouTubeUploadOpen] = useState<boolean>(false);
 
   // Past Papers Search & Filter State inside LMS
   const [paperSearch, setPaperSearch] = useState<string>('');
@@ -523,11 +526,25 @@ export const LMSDashboard: React.FC<LMSDashboardProps> = ({
             </div>
 
             {/* Actions */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2.5">
+              {(currentUser.isAdmin || currentUser.role === 'Admin') && (
+                <button
+                  onClick={() => setIsYouTubeUploadOpen(true)}
+                  className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold transition-all shadow-xs cursor-pointer active:scale-95"
+                  title="Add an unlisted YouTube video lecture to the syllabus (Admin only)"
+                >
+                  <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                    <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                  </svg>
+                  <span className="hidden sm:inline">Add YouTube Lecture</span>
+                  <span className="sm:hidden">YouTube</span>
+                </button>
+              )}
+
               {selectedMonthId && (
                 <button
                   onClick={() => setSelectedMonthId(null)}
-                  className="text-xs font-bold text-slate-700 hover:text-slate-950 bg-slate-100 hover:bg-slate-200 px-3.5 py-1.5 rounded-xl transition-colors flex items-center gap-1.5"
+                  className="text-xs font-bold text-slate-700 hover:text-slate-950 bg-slate-100 hover:bg-slate-200 px-3.5 py-1.5 rounded-xl transition-colors flex items-center gap-1.5 cursor-pointer"
                 >
                   <ArrowLeft className="w-3.5 h-3.5" />
                   <span>All Batches</span>
@@ -552,11 +569,38 @@ export const LMSDashboard: React.FC<LMSDashboardProps> = ({
                     {currentUser.batch} · Student ID: <span className="font-mono text-slate-200 font-semibold">{currentUser.indexNumber}</span>
                   </p>
                 </div>
-                <div className="inline-flex items-center gap-2 text-xs font-semibold text-emerald-400 bg-emerald-950/60 border border-emerald-500/30 px-3 py-1.5 rounded-xl self-start sm:self-auto">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400" />
-                  <span>Enrolled Student</span>
+                <div className="flex items-center gap-2">
+                  {(currentUser.isAdmin || currentUser.role === 'Admin') && (
+                    <button
+                      onClick={() => setIsYouTubeUploadOpen(true)}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-red-600/90 hover:bg-red-600 text-white text-xs font-bold transition-all shadow-xs cursor-pointer border border-red-500/30"
+                    >
+                      <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                        <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                      </svg>
+                      <span>Add YouTube Video</span>
+                    </button>
+                  )}
+                  <div className="inline-flex items-center gap-2 text-xs font-semibold text-emerald-400 bg-emerald-950/60 border border-emerald-500/30 px-3 py-1.5 rounded-xl self-start sm:self-auto">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                    <span>Enrolled Student</span>
+                  </div>
                 </div>
               </div>
+
+              {/* Recharts Visual Progress Tracker: Module Completion & Lecture Checklist */}
+              <ModuleProgressChart
+                currentUser={currentUser}
+                lessons={lessonsList}
+                onSelectSession={(sessionId, lessonId) => {
+                  const lesson = lessonsList.find(l => l.id === lessonId);
+                  if (!lesson) return;
+                  const session = lesson.sessions.find(s => s.id === sessionId);
+                  if (!session) return;
+                  const videoMod = sessionToVideoModule(session, lesson);
+                  onSelectVideo(videoMod);
+                }}
+              />
 
               {/* Scheduled Live Masterclasses & Zoom Meeting Banner */}
               <div className="rounded-2xl bg-gradient-to-r from-rose-950 via-slate-900 to-indigo-950 border border-rose-500/30 p-5 text-white flex flex-col md:flex-row md:items-center justify-between gap-4 shadow-md relative overflow-hidden">
@@ -1616,6 +1660,16 @@ export const LMSDashboard: React.FC<LMSDashboardProps> = ({
         onClose={() => setSelectedPaymentModule(null)}
         onSuccessUnlock={handleUnlockSuccess}
         currentUser={currentUser}
+      />
+
+      {/* Direct YouTube Video Uploader Modal */}
+      <YouTubeUploaderModal
+        isOpen={isYouTubeUploadOpen}
+        onClose={() => setIsYouTubeUploadOpen(false)}
+        lessons={lessonsList}
+        onUploadSuccess={() => {
+          setLessonsList(lessonService.getLessons());
+        }}
       />
 
     </div>

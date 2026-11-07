@@ -63,6 +63,7 @@ import { PaymentSlipsTab } from './admin/PaymentSlipsTab';
 import { MaterialUploadsTab } from './admin/MaterialUploadsTab';
 import { GeneralSettingsTab } from './admin/GeneralSettingsTab';
 import { LiveClassesScheduler } from './admin/LiveClassesScheduler';
+import { YouTubeUploaderModal } from './YouTubeUploaderModal';
 
 interface AdminDashboardProps {
   currentUser: CurrentUser;
@@ -124,6 +125,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [showAddPaperModal, setShowAddPaperModal] = useState(false);
   const [showAddLessonModal, setShowAddLessonModal] = useState(false);
   const [showAddSessionModal, setShowAddSessionModal] = useState(false);
+  const [showYouTubeUploaderModal, setShowYouTubeUploaderModal] = useState(false);
 
   // Form states for new content
   const [newPaper, setNewPaper] = useState({
@@ -1126,6 +1128,16 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               {contentSubTab === 'lessons' && (
                 <div className="flex items-center gap-2">
                   <button
+                    onClick={() => setShowYouTubeUploaderModal(true)}
+                    className="py-2 px-3.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs active:scale-95"
+                    title="Attach unlisted YouTube lecture video to lesson"
+                  >
+                    <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
+                      <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                    </svg>
+                    <span>Add YouTube Lecture</span>
+                  </button>
+                  <button
                     onClick={() => setShowAddLessonModal(true)}
                     className="py-2 px-3.5 rounded-xl bg-slate-950 hover:bg-slate-800 text-white text-xs font-bold transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs"
                   >
@@ -1945,6 +1957,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           </div>
         </div>
       )}
+
+      {/* Direct YouTube Video Uploader Modal */}
+      <YouTubeUploaderModal
+        isOpen={showYouTubeUploaderModal}
+        onClose={() => setShowYouTubeUploaderModal(false)}
+        lessons={lessonsList}
+        onUploadSuccess={() => {
+          setLessonsList(lessonService.getLessons());
+          setToastMessage('Video uploaded to YouTube and new session published to syllabus!');
+        }}
+      />
 
     </div>
   );
