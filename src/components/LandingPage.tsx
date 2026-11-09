@@ -126,12 +126,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             {/* Title with Varied Text Styles & Typewriter Animation */}
             <ScrollReveal direction="up" delay={180}>
               <div className="space-y-1 sm:space-y-2 md:space-y-3">
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] sm:text-xs md:text-sm font-bold uppercase tracking-[0.2em] text-slate-500">
-                    MEET THE LEAD FACULTY
-                  </span>
-                </div>
-
                 <h1 className="font-black text-slate-950 tracking-tight leading-[1.2]">
                   <span className="block text-slate-900 font-extrabold text-sm sm:text-base md:text-xl lg:text-3xl">
                     Under a Single Lead Faculty
@@ -235,9 +229,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         <ScrollReveal direction="up" delay={50}>
           <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
             <div className="space-y-2">
-              <span className="text-xs font-bold uppercase tracking-wider text-emerald-700">
-                CLASSES &amp; PROGRAMS
-              </span>
               <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-slate-950">
                 Structured Academic Programs &amp; Masterclasses at Inspire Education
               </h2>
@@ -276,10 +267,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 </p>
               </div>
 
-              <div className="relative z-10 pt-6 border-t border-white/10 flex items-center justify-between">
-                <span className="text-xs uppercase tracking-wider text-emerald-400 font-bold">
-                  CORE
-                </span>
+              <div className="relative z-10 pt-6 border-t border-white/10 flex items-center justify-end">
                 <span className="text-xs font-semibold text-slate-300 group-hover:text-white flex items-center gap-1 transition-colors">
                   <span>View Details</span>
                   <ChevronRight className="w-4 h-4" />
@@ -311,10 +299,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 </p>
               </div>
 
-              <div className="pt-6 border-t border-slate-100 flex items-center justify-between">
-                <span className="text-xs uppercase tracking-wider text-blue-600 font-bold">
-                  REVISION
-                </span>
+              <div className="pt-6 border-t border-slate-100 flex items-center justify-end">
                 <span className="text-xs font-bold text-blue-700 flex items-center gap-1">
                   <span>Explore Schedule</span>
                   <ChevronRight className="w-4 h-4" />
@@ -346,10 +331,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 </p>
               </div>
 
-              <div className="pt-6 border-t border-slate-100 flex items-center justify-between">
-                <span className="text-xs uppercase tracking-wider text-indigo-600 font-bold">
-                  EVALUATION
-                </span>
+              <div className="pt-6 border-t border-slate-100 flex items-center justify-end">
                 <span className="text-xs font-bold text-blue-700 flex items-center gap-1">
                   <span>View Papers</span>
                   <ChevronRight className="w-4 h-4" />
@@ -369,9 +351,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         <ScrollReveal direction="up" delay={50}>
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
             <div className="space-y-2">
-              <span className="text-xs font-bold uppercase tracking-wider text-blue-700">
-                OFFICIAL G.C.E. A/L ARCHIVES
-              </span>
               <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-slate-950">
                 Search Past Examination Papers &amp; Marking Schemes
               </h2>

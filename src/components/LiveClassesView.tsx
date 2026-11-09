@@ -110,14 +110,6 @@ export const LiveClassesView: React.FC<LiveClassesViewProps> = ({
       
       {/* Hero Header */}
       <section className="space-y-4 max-w-3xl">
-        <div className="flex items-center gap-2 text-xs font-semibold text-slate-500">
-          <span className="text-blue-700 font-bold uppercase tracking-wider">
-            Live Interactive Hub
-          </span>
-          <span aria-hidden="true">·</span>
-          <span>Zoom Theory &amp; Paper Masterclasses</span>
-        </div>
-
         <h1 className="text-3xl sm:text-5xl font-black text-slate-950 tracking-tight leading-[1.15]">
           Scheduled Live Classes &amp;{' '}
           <span className="bg-gradient-to-r from-blue-700 via-indigo-700 to-sky-600 bg-clip-text text-transparent">

@@ -112,18 +112,8 @@ export const ResultsView: React.FC<ResultsViewProps> = ({
         <div className="absolute top-0 left-1/3 w-[600px] h-[450px] bg-emerald-100/30 rounded-full blur-[140px] -z-10 pointer-events-none" />
         <div className="absolute top-1/4 right-10 w-[500px] h-[400px] bg-sky-100/30 rounded-full blur-[120px] -z-10 pointer-events-none" />
 
-        <div className="space-y-6 max-w-4xl">
+        <div className="space-y-4 max-w-4xl">
           <ScrollReveal direction="up" delay={50}>
-            <div className="flex items-center gap-2 text-xs font-semibold text-slate-500">
-              <span className="uppercase tracking-[0.2em] text-emerald-800 font-bold">
-                WALL OF FAME // HALL OF ACADEMIC EXCELLENCE
-              </span>
-              <span aria-hidden="true">·</span>
-              <span>G.C.E. Advanced Level Commerce</span>
-            </div>
-          </ScrollReveal>
-
-          <ScrollReveal direction="up" delay={120}>
             <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-slate-950 tracking-tight leading-[1.15]">
               National Benchmark Ranks &amp;{' '}
               <span className="bg-gradient-to-r from-emerald-600 via-teal-600 to-sky-700 bg-clip-text text-transparent">

@@ -96,15 +96,7 @@ export const StudyMaterialsStore: React.FC<StudyMaterialsStoreProps> = ({
         <div className="absolute top-0 left-1/4 w-[600px] h-[450px] bg-blue-300/20 rounded-full blur-[140px] -z-10 pointer-events-none" />
         <div className="absolute top-1/3 right-10 w-[500px] h-[400px] bg-amber-200/20 rounded-full blur-[120px] -z-10 pointer-events-none" />
 
-        <div className="space-y-6 max-w-4xl">
-          <div className="flex items-center gap-2 text-xs font-semibold text-slate-500">
-            <span className="uppercase tracking-[0.2em] text-blue-700 font-bold">
-              ACADEMIC BOOKSTORE // PRINT &amp; DIGITAL KITS
-            </span>
-            <span aria-hidden="true">·</span>
-            <span>Comprehensive Handbooks &amp; Revision Tutes</span>
-          </div>
-
+        <div className="space-y-4 max-w-4xl">
           <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-slate-950 tracking-tight leading-[1.12]">
             Curated Study Handbooks &amp;{' '}
             <span className="bg-gradient-to-r from-blue-600 via-indigo-600 to-amber-600 bg-clip-text text-transparent">
@@ -186,9 +178,9 @@ export const StudyMaterialsStore: React.FC<StudyMaterialsStoreProps> = ({
         <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center justify-between gap-3 animate-in fade-in">
           <div className="flex items-center gap-2">
             <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-            <span><strong>{downloadNotice}</strong> download initialized from R2 cloud storage.</span>
+            <span>Downloading <strong>{downloadNotice}</strong>...</span>
           </div>
-          <span className="text-[10px] text-emerald-600 font-mono">Verified PDF</span>
+          <span className="text-[10px] text-emerald-600 font-semibold">PDF Ready</span>
         </div>
       )}
 
@@ -199,7 +191,7 @@ export const StudyMaterialsStore: React.FC<StudyMaterialsStoreProps> = ({
         {loading ? (
           <div className="p-16 text-center rounded-[32px] bg-white/80 border border-slate-200/80 space-y-3">
             <Loader2 className="w-8 h-8 text-blue-600 animate-spin mx-auto" />
-            <h3 className="text-base font-bold text-slate-800">Connecting to Repository &amp; R2 Storage...</h3>
+            <h3 className="text-base font-bold text-slate-800">Loading Study Materials...</h3>
           </div>
         ) : filteredMaterials.length === 0 ? (
           <div className="p-16 text-center rounded-[32px] bg-white/80 border border-slate-200/80 space-y-4">
@@ -210,7 +202,7 @@ export const StudyMaterialsStore: React.FC<StudyMaterialsStoreProps> = ({
               <h3 className="text-lg font-black text-slate-900">No study materials found</h3>
               <p className="text-xs text-slate-500 leading-relaxed">
                 {materials.length === 0 
-                  ? 'No study handbooks or tutes are currently registered in the database. When publication items are added in the Database or Cloudflare R2 Storage, they will automatically appear here.'
+                  ? 'No study handbooks or tutes are currently available. Please check back soon.'
                   : 'No publications match your selected category or search query. Try resetting your search filters.'}
               </p>
             </div>

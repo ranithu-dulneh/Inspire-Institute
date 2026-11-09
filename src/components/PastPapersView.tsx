@@ -93,15 +93,7 @@ export const PastPapersView: React.FC<PastPapersViewProps> = ({ onSelectPaper })
         <div className="absolute top-0 left-1/4 w-[600px] h-[450px] bg-blue-300/20 rounded-full blur-[140px] -z-10 pointer-events-none" />
         <div className="absolute top-1/3 right-10 w-[500px] h-[400px] bg-sky-200/25 rounded-full blur-[120px] -z-10 pointer-events-none" />
 
-        <div className="space-y-6 max-w-4xl">
-          <div className="flex items-center gap-2 text-xs font-semibold text-slate-500">
-            <span className="uppercase tracking-[0.2em] text-blue-700 font-bold">
-              NATIONAL REPOSITORY // G.C.E. A/L ARCHIVES
-            </span>
-            <span aria-hidden="true">·</span>
-            <span>Standardized Department Marking Schemes</span>
-          </div>
-
+        <div className="space-y-4 max-w-4xl">
           <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-slate-950 tracking-tight leading-[1.12]">
             Official Past Examination Archives &amp;{' '}
             <span className="bg-gradient-to-r from-blue-600 via-indigo-600 to-sky-600 bg-clip-text text-transparent">
@@ -120,8 +112,8 @@ export const PastPapersView: React.FC<PastPapersViewProps> = ({ onSelectPaper })
            ───────────────────────────────────────────────────────────── */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 pt-10">
           <div className="p-5 sm:p-6 rounded-[28px] bg-white/95 backdrop-blur-2xl border border-slate-200/80 shadow-[0_10px_30px_-10px_rgba(15,23,42,0.05)]">
-            <span className="text-[10px] font-sans font-bold uppercase tracking-wider text-slate-400 block">
-              COVERAGE
+            <span className="text-xs font-semibold text-slate-500 block">
+              Years Covered
             </span>
             <div className="flex items-baseline gap-2 mt-2">
               <span className="text-3xl sm:text-4xl font-black text-slate-950 font-sans tracking-tight">
@@ -132,8 +124,8 @@ export const PastPapersView: React.FC<PastPapersViewProps> = ({ onSelectPaper })
           </div>
 
           <div className="p-5 sm:p-6 rounded-[28px] bg-white/95 backdrop-blur-2xl border border-slate-200/80 shadow-[0_10px_30px_-10px_rgba(15,23,42,0.05)]">
-            <span className="text-[10px] font-sans font-bold uppercase tracking-wider text-emerald-700 block">
-              MARKING SCHEMES
+            <span className="text-xs font-semibold text-emerald-700 block">
+              Marking Schemes
             </span>
             <div className="flex items-baseline gap-2 mt-2">
               <span className="text-3xl sm:text-4xl font-black text-emerald-600 font-sans tracking-tight">
@@ -279,7 +271,7 @@ export const PastPapersView: React.FC<PastPapersViewProps> = ({ onSelectPaper })
         {loading ? (
           <div className="p-16 text-center rounded-[32px] bg-white/80 border border-slate-200/80 space-y-3">
             <Loader2 className="w-8 h-8 text-blue-600 animate-spin mx-auto" />
-            <h3 className="text-base font-bold text-slate-800">Connecting to Repository &amp; R2 Storage...</h3>
+            <h3 className="text-base font-bold text-slate-800">Loading Examination Papers...</h3>
           </div>
         ) : filteredPapers.length === 0 ? (
           <div className="p-16 text-center rounded-[32px] bg-white/80 border border-slate-200/80 space-y-4">
@@ -290,7 +282,7 @@ export const PastPapersView: React.FC<PastPapersViewProps> = ({ onSelectPaper })
               <h3 className="text-lg font-black text-slate-900">No examination documents found</h3>
               <p className="text-xs text-slate-500 leading-relaxed">
                 {papers.length === 0 
-                  ? 'No past examination papers or tutes are currently registered in the database. When curriculum materials are added in the Database or Cloudflare R2 Storage, they will automatically appear here.'
+                  ? 'No past examination papers are currently uploaded. Please check back soon.'
                   : 'No papers match your selected year, language medium, or search query. Try resetting your search filters.'}
               </p>
             </div>

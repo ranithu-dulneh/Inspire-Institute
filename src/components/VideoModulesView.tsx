@@ -233,15 +233,7 @@ export const VideoModulesView: React.FC<VideoModulesViewProps> = ({
         <div className="absolute top-0 left-1/3 w-[600px] h-[450px] bg-blue-300/20 rounded-full blur-[140px] -z-10 pointer-events-none" />
         <div className="absolute top-1/3 right-10 w-[500px] h-[400px] bg-indigo-200/25 rounded-full blur-[120px] -z-10 pointer-events-none" />
 
-        <div className="space-y-5 max-w-4xl">
-          <div className="flex items-center gap-2 text-xs font-semibold text-slate-500">
-            <span className="uppercase tracking-[0.2em] text-blue-700 font-bold">
-              ON-DEMAND REPOSITORY // HD LESSON MODULES
-            </span>
-            <span aria-hidden="true">·</span>
-            <span>Recorded Theory &amp; Exam Masterclasses</span>
-          </div>
-
+        <div className="space-y-4 max-w-4xl">
           <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-slate-950 tracking-tight leading-[1.12]">
             Comprehensive Lesson Modules &amp;{' '}
             <span className="bg-gradient-to-r from-blue-600 via-indigo-600 to-sky-600 bg-clip-text text-transparent">
@@ -262,9 +254,9 @@ export const VideoModulesView: React.FC<VideoModulesViewProps> = ({
           <div className="mt-8 p-6 sm:p-8 rounded-[32px] bg-gradient-to-r from-slate-950 via-[#0B1528] to-blue-950 text-white shadow-[0_16px_50px_rgba(15,23,42,0.14)] border border-slate-800 relative overflow-hidden flex flex-col lg:flex-row items-center justify-between gap-6">
             <div className="relative z-10 space-y-3 max-w-2xl">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-[10px] font-sans font-bold uppercase tracking-wider text-emerald-400 bg-emerald-950/70 border border-emerald-500/30">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold text-emerald-300 bg-emerald-950/60 border border-emerald-500/30">
                   <Radio className="w-3 h-3 text-emerald-400 animate-pulse" />
-                  <span>{spotlightItem.session.month} RECENT LESSON SESSION</span>
+                  <span>Latest Lesson · {spotlightItem.session.month}</span>
                 </span>
                 <span className="text-xs text-slate-400 font-medium">
                   {spotlightItem.lesson.title}
@@ -287,7 +279,7 @@ export const VideoModulesView: React.FC<VideoModulesViewProps> = ({
                 <span>·</span>
                 <span className="font-medium">{spotlightItem.session.month} Cohort</span>
                 <span>·</span>
-                <span className="text-emerald-400 font-bold">1080p HD Studio Quality</span>
+                <span className="text-emerald-400 font-semibold">Comprehensive Masterclass</span>
               </div>
             </div>
 

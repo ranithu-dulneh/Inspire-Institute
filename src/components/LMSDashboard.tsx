@@ -363,8 +363,8 @@ export const LMSDashboard: React.FC<LMSDashboardProps> = ({
         {/* Section 1: Main Classroom Desk */}
         <div className="space-y-1 pt-1">
           <div className="px-3 flex items-center justify-between">
-            <p className="text-[10px] font-mono font-bold tracking-wider uppercase text-slate-400">
-              MODULES // DESK
+            <p className="text-xs font-semibold text-slate-500">
+              Classroom &amp; Modules
             </p>
           </div>
           {sidebarPrimaryLinks.map((item) => {
@@ -400,8 +400,8 @@ export const LMSDashboard: React.FC<LMSDashboardProps> = ({
 
         {/* Section 2: Archives & Resources */}
         <div className="space-y-1 pt-2 border-t border-slate-100/80">
-          <p className="px-3 text-[10px] font-mono font-bold tracking-wider uppercase text-slate-400">
-            VAULT // REPOSITORY
+          <p className="px-3 text-xs font-semibold text-slate-500">
+            Study Resources
           </p>
           {sidebarResourceLinks.map((item) => {
             const Icon = item.icon;
@@ -608,7 +608,7 @@ export const LMSDashboard: React.FC<LMSDashboardProps> = ({
                 <div className="absolute top-0 right-0 w-64 h-64 bg-rose-500/10 rounded-full blur-3xl pointer-events-none" />
                 <div className="space-y-1 relative z-10">
                   <div className="flex items-center gap-2">
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/30 text-[10px] font-mono font-bold uppercase tracking-wider">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/30 text-xs font-semibold">
                       <span className="w-1.5 h-1.5 rounded-full bg-rose-400 animate-ping" />
                       Live Masterclasses &amp; Zoom
                     </span>
@@ -639,8 +639,8 @@ export const LMSDashboard: React.FC<LMSDashboardProps> = ({
               {/* Topic Filter Pills Bar */}
               <div className="flex items-center justify-between gap-3 overflow-x-auto pb-1 no-scrollbar">
                 <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold text-slate-400 uppercase tracking-wider pl-1 hidden sm:inline">
-                    FILTER:
+                  <span className="text-xs font-semibold text-slate-500 pl-1 hidden sm:inline">
+                    Filter:
                   </span>
                   {[
                     { id: 'all', label: 'All Lessons' },
@@ -1006,12 +1006,6 @@ export const LMSDashboard: React.FC<LMSDashboardProps> = ({
               {/* Header Hero Banner */}
               <div className="p-6 sm:p-7 rounded-[28px] bg-gradient-to-r from-slate-950 via-[#0B1528] to-blue-950 text-white shadow-[0_12px_36px_rgba(15,23,42,0.1)] border border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="space-y-1.5">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider text-blue-400 bg-blue-950/70 border border-blue-500/30">
-                      G.C.E. A/L ARCHIVES
-                    </span>
-                    <span className="text-xs text-slate-400 font-sans">2019–2025 All Mediums</span>
-                  </div>
                   <h3 className="text-lg sm:text-2xl font-black text-white">Official Past Examination Papers &amp; Marking Schemes</h3>
                   <p className="text-xs text-slate-300 max-w-2xl">
                     Full official Department of Examinations papers, marking schemes, model questions, and provincial trial sets.
@@ -1054,7 +1048,7 @@ export const LMSDashboard: React.FC<LMSDashboardProps> = ({
                   
                   {/* Medium Selector */}
                   <div className="flex flex-wrap items-center gap-1.5">
-                    <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mr-1">Medium:</span>
+                    <span className="text-xs font-semibold text-slate-500 mr-1">Medium:</span>
                     {[
                       { id: 'all', label: 'All Mediums' },
                       { id: 'sinhala', label: 'සිංහල (Sinhala)' },
@@ -1077,7 +1071,7 @@ export const LMSDashboard: React.FC<LMSDashboardProps> = ({
 
                   {/* Category Selector */}
                   <div className="flex flex-wrap items-center gap-1.5">
-                    <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mr-1">Category:</span>
+                    <span className="text-xs font-semibold text-slate-500 mr-1">Category:</span>
                     {[
                       { id: 'all', label: 'All Categories' },
                       { id: 'national', label: 'National Exam (A/L)' },
@@ -1100,7 +1094,7 @@ export const LMSDashboard: React.FC<LMSDashboardProps> = ({
 
                   {/* Year Quick Filter Pills */}
                   <div className="flex flex-wrap items-center gap-1.5">
-                    <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mr-1">Year:</span>
+                    <span className="text-xs font-semibold text-slate-500 mr-1">Year:</span>
                     {['all', '2025', '2024', '2023', '2022', '2021', '2020', '2019'].map((yr) => (
                       <button
                         key={yr}
@@ -1234,12 +1228,6 @@ export const LMSDashboard: React.FC<LMSDashboardProps> = ({
               {/* Header Hero Banner */}
               <div className="p-6 sm:p-7 rounded-[28px] bg-gradient-to-r from-slate-950 via-[#0B1528] to-blue-950 text-white shadow-[0_12px_36px_rgba(15,23,42,0.1)] border border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="space-y-1.5">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider text-emerald-400 bg-emerald-950/70 border border-emerald-500/30">
-                      PRINT &amp; DIGITAL HANDBOOKS
-                    </span>
-                    <span className="text-xs text-slate-400 font-sans">Official LKAS Standards Series</span>
-                  </div>
                   <h3 className="text-lg sm:text-2xl font-black text-white">Academic Study Tutes, Notes &amp; Handouts</h3>
                   <p className="text-xs text-slate-300 max-w-2xl">
                     Comprehensive study materials, theory tutorials, LKAS standard summaries, and exam prep kits. Read PDF online or order physical copies.
@@ -1282,7 +1270,7 @@ export const LMSDashboard: React.FC<LMSDashboardProps> = ({
                   
                   {/* Category Filter */}
                   <div className="flex flex-wrap items-center gap-1.5">
-                    <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mr-1">Category:</span>
+                    <span className="text-xs font-semibold text-slate-500 mr-1">Category:</span>
                     {[
                       { id: 'all', label: 'All Handbooks' },
                       { id: 'lesson-wise-tutes', label: 'Lesson Wise Tutes' },
@@ -1306,7 +1294,7 @@ export const LMSDashboard: React.FC<LMSDashboardProps> = ({
 
                   {/* Batch Filter */}
                   <div className="flex flex-wrap items-center gap-1.5">
-                    <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mr-1">Batch:</span>
+                    <span className="text-xs font-semibold text-slate-500 mr-1">Batch:</span>
                     {['all', '2028', '2027', '2026'].map((b) => (
                       <button
                         key={b}
@@ -1454,12 +1442,6 @@ export const LMSDashboard: React.FC<LMSDashboardProps> = ({
               {/* Header Hero Banner */}
               <div className="p-6 sm:p-7 rounded-[28px] bg-gradient-to-r from-slate-950 via-[#0B1528] to-blue-950 text-white shadow-[0_12px_36px_rgba(15,23,42,0.1)] border border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="space-y-1.5">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider text-emerald-400 bg-emerald-950/70 border border-emerald-500/30">
-                      ON-DEMAND REPOSITORY
-                    </span>
-                    <span className="text-xs text-slate-400 font-sans">1080p HD Studio Masterclasses</span>
-                  </div>
                   <h3 className="text-lg sm:text-2xl font-black text-white capitalize">
                     {activeSidebar === 'al-video-modules' ? 'All Lesson Modules' : activeSidebar.replace(/-/g, ' ')} Video Catalog
                   </h3>
@@ -1501,7 +1483,7 @@ export const LMSDashboard: React.FC<LMSDashboardProps> = ({
 
                 {/* Topic Filter Pills */}
                 <div className="flex flex-wrap items-center gap-1.5 pt-1">
-                  <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider mr-1">Topic:</span>
+                  <span className="text-xs font-semibold text-slate-500 mr-1">Topic:</span>
                   {[
                     { id: 'all', label: 'All Topics' },
                     { id: 'Partnership', label: 'Partnership Accounts' },
