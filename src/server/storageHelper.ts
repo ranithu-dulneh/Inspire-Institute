@@ -43,7 +43,7 @@ export function getR2Config() {
     process.env.VITE_R2_PUBLIC_URL ||
     process.env.CLOUDFLARE_R2_PUBLIC_URL ||
     process.env.VITE_R2_URL ||
-    'https://pub-13c8a61be13043eeb6acf002759522b9.r2.dev'
+    'https://pub-3c50a30d70944cc59a4fef93e7939680.r2.dev'
   ).trim().replace(/\/$/, '');
 
   const isConfigured = Boolean(accountId && accessKeyId && secretAccessKey);
